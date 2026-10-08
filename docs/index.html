@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cauchy–Schwarz for Real Powers</title>
+<meta name="description" content="An illustrated, interactive explanation of the proof that the generalized Cauchy–Schwarz inequality of Johnston, Plosker, Torrance and Varona holds for every real power p ≥ 2.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root {
+  --bg: #fbfaf7; --surface: #ffffff; --ink: #1d2430; --muted: #5d6878; --faint: #e6e2da;
+  --v: #d9822b; --w: #1f8a99; --good: #2f8f4e; --bad: #c0392b; --gold: #b8860b; --accent: #1f3a5f;
+  --code: #f3f1ec;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1621; --surface: #142030; --ink: #e8ecf2; --muted: #9aa6b6; --faint: #24344a;
+    --v: #f2a65a; --w: #5cc8d7; --good: #7bd389; --bad: #f2545b; --gold: #f4d35e; --accent: #9cc3ff;
+    --code: #121c2a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1621; --surface: #142030; --ink: #e8ecf2; --muted: #9aa6b6; --faint: #24344a;
+  --v: #f2a65a; --w: #5cc8d7; --good: #7bd389; --bad: #f2545b; --gold: #f4d35e; --accent: #9cc3ff;
+  --code: #121c2a;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 18px/1.65 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+}
+main { max-width: 760px; margin: 0 auto; padding: 0 16px 80px; }
+h1, h2, h3, .sans, button, label, .readout, figcaption, nav {
+  font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+header.hero { padding: 64px 0 24px; }
+.kicker { color: var(--muted); letter-spacing: .08em; font-size: 13px; text-transform: uppercase; }
+h1 { font-size: clamp(32px, 6vw, 48px); line-height: 1.1; margin: 8px 0 16px; }
+h2 { font-size: 26px; margin: 56px 0 8px; color: var(--accent); }
+h3 { font-size: 19px; margin: 28px 0 4px; }
+p { margin: 12px 0; }
+a { color: var(--accent); }
+.lede { font-size: 20px; color: var(--muted); }
+.display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.box {
+  background: var(--surface); border: 1px solid var(--faint); border-radius: 10px;
+  padding: 16px; margin: 20px 0;
+}
+.widget { padding: 16px 16px 12px; }
+.row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.col { flex: 1 1 280px; min-width: 0; }
+svg, canvas { display: block; max-width: 100%; height: auto; touch-action: none; }
+.readout { font-size: 15px; color: var(--muted); }
+.readout b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.verdict { font-family: "Avenir Next", Arial, sans-serif; font-weight: 600; font-size: 16px; }
+.ok { color: var(--good); } .no { color: var(--bad); }
+.vcol { color: var(--v); } .wcol { color: var(--w); }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.sliders { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 10px; align-items: center; font-size: 14px; }
+.sliders output { font-family: ui-monospace, Menlo, monospace; font-size: 13px; min-width: 3.2em; text-align: right; }
+button {
+  font-size: 14px; border: 1px solid var(--faint); background: var(--bg); color: var(--ink);
+  border-radius: 999px; padding: 5px 12px; cursor: pointer; margin: 4px 4px 0 0;
+}
+button:hover { border-color: var(--accent); }
+figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
+.timeline { border-left: 2px solid var(--faint); margin: 16px 0 16px 8px; padding-left: 18px; }
+.timeline div { margin: 10px 0; }
+.timeline b { font-family: "Avenir Next", Arial, sans-serif; color: var(--gold); margin-right: 8px; }
+pre {
+  background: var(--code); border: 1px solid var(--faint); border-radius: 8px; padding: 14px;
+  overflow-x: auto; font-size: 13.5px; line-height: 1.5;
+}
+.grid3 { display: inline-grid; grid-template-columns: repeat(3, auto); gap: 4px; margin: 8px 0; }
+.grid3 span { padding: 4px 8px; border-radius: 6px; border: 1px solid var(--faint); font-size: 15px; }
+.grid3 span.diag { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 15%, transparent); }
+nav.toc { font-size: 15px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+nav.toc a { white-space: nowrap; }
+.links a { display: inline-block; margin: 4px 14px 4px 0; }
+footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--faint); margin-top: 56px; padding-top: 16px; }
+</style>
+</head>
+<body>
+<main>
+
+<header class="hero">
+  <div class="kicker" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>Principia Math · MathDB 369283 · October 2026</span><button id="theme" aria-label="Switch colour theme">Theme</button></div>
+  <h1>Cauchy–Schwarz for real powers</h1>
+  <p class="lede">In 2025 four mathematicians conjectured that a strengthened Cauchy–Schwarz inequality holds for every real power from 2 upwards. This page explains why it is true, with pictures you can play with. The full proof is in the paper, and every step of it is checked by the Lean proof assistant.</p>
+  <p class="sans" style="font-size:15px;color:var(--muted)">Pragyaan Gaur</p>
+  <nav class="toc"><a href="#gap">The gap</a><a href="#powers">Powers</a><a href="#history">History</a><a href="#tensor">Whole numbers</a><a href="#matrices">The idea</a><a href="#cone">The cone</a><a href="#more">More results</a><a href="#cooling">Uses</a><a href="#lean">Lean</a></nav>
+</header>
+
+<h2 id="gap">1. The gap in Cauchy–Schwarz</h2>
+<p>The Cauchy–Schwarz inequality is one of the most used facts in mathematics. For two vectors $v$ and $w$ it says</p>
+<div class="display">$$\langle v,w\rangle\;\le\;\|v\|\,\|w\|,$$</div>
+<p>where $\langle v,w\rangle=v_1w_1+\dots+v_nw_n$ is the inner product and $\|v\|=\sqrt{\langle v,v\rangle}$ is the length. In the plane this is the statement that $\cos\theta\le1$ for the angle $\theta$ between the vectors. The difference between the two sides is a <em>gap</em>, $\|v\|\,\|w\|-\langle v,w\rangle$. It is zero exactly when the vectors point the same way, and it grows as they turn apart. Drag the tips of the arrows below.</p>
+
+<div class="box widget">
+  <div class="row">
+    <div class="col"><svg id="csSvg" viewBox="0 0 320 260" width="320" height="260" aria-label="Two draggable vectors"></svg></div>
+    <div class="col readout">
+      <div><span class="vcol">v</span> = <b id="csV"></b>, <span class="wcol">w</span> = <b id="csW"></b></div>
+      <div>⟨v, w⟩ = <b id="csIp"></b></div>
+      <div>‖v‖ ‖w‖ = <b id="csNN"></b></div>
+      <div style="margin-top:8px">gap = <b id="csGap"></b></div>
+      <svg id="csBar" viewBox="0 0 260 18" width="260" height="18"></svg>
+    </div>
+  </div>
+  <figcaption>The gap is the length product minus the inner product. Make the arrows parallel and it vanishes.</figcaption>
+</div>
+
+<h2 id="powers">2. Raising the entries to a power</h2>
+<p>Now take vectors with nonnegative entries and raise every entry to a power $p$. Write $v^p=(v_1^p,\dots,v_n^p)$. Large entries grow faster than small ones, so the powered vectors turn towards the coordinate axes and away from each other, and their gap grows. Nathaniel Johnston found in 2018 that for $p=2$ the gap of the squared vectors never exceeds the square of something natural:</p>
+<div class="display">$$\|v^2\|\,\|w^2\|-\langle v^2,w^2\rangle\;\le\;\|v\|^2\|w\|^2-\langle v,w\rangle^2 .$$</div>
+<p>The right side is the squared area of the parallelogram spanned by $v$ and $w$. Johnston, Plosker, Torrance and Varona asked which other powers work. The question is whether</p>
+<div class="display">$$\htmlClass{vcol}{\|v^p\|\,\|w^p\|-\langle v^p,w^p\rangle}\;\le\;\htmlClass{wcol}{\|v\|^p\|w\|^p-\langle v,w\rangle^p}$$</div>
+<p>holds for all nonnegative vectors. Try it. The sliders set three entries of each vector and the exponent. The curve shows, for every $p$ at once, whether the inequality holds for your vectors. It is above the axis where the inequality holds and below it where it fails.</p>
+
+<div class="box widget" id="explorer">
+  <div class="row">
+    <div class="col">
+      <div class="sliders" id="sliders"></div>
+      <div style="margin-top:6px">
+        <button data-preset="classic">v = (2, 1), w = (1, 2)</button>
+        <button data-preset="three">v = (3, 1, 0), w = (1, 4, 0)</button>
+        <button data-preset="eq2">equality at p = 2</button>
+        <button data-preset="parallel">parallel</button>
+        <button data-preset="random">random</button>
+      </div>
+    </div>
+    <div class="col readout">
+      <div>left side <b id="exL" class="vcol"></b></div>
+      <div>right side <b id="exR" class="wcol"></b></div>
+      <div class="verdict" id="exVerdict" style="margin-top:6px"></div>
+    </div>
+  </div>
+  <canvas id="exPlot" width="700" height="240" style="margin-top:12px;width:100%"></canvas>
+  <figcaption>The curve is (right − left) / max(right, left) as a function of p, on a vertical scale stretched near zero so that small differences are visible. The red band marks 1 &lt; p &lt; 2. The dot is the current p.</figcaption>
+</div>
+
+<p>With $v=(2,1)$ and $w=(1,2)$ the two sides are equal at $p=1$ and at $p=2$, the inequality fails for every $p$ strictly between them, and it holds for every $p$ above 2. At $p=1.5$ the left side is $3.343$ and the right side is $3.180$.</p>
+
+<h2 id="history">3. A short history</h2>
+<div class="timeline">
+  <div><b>2018</b>Johnston asks on MathOverflow whether the case $p=2$ is true.</div>
+  <div><b>2019</b>Johnston and MacLean prove it while studying pairwise completely positive matrices, a topic from the theory of quantum entanglement.</div>
+  <div><b>2025</b>Johnston, Plosker, Torrance and Varona give three new proofs and prove the inequality for every whole number $p$. They show that it fails for some vectors when $0&lt;p&lt;1$ or $1&lt;p&lt;2$. They test real exponents $p\ge2$ on more than $10^{10}$ random pairs and state Conjecture 5.1: it holds for every real $p\ge2$. The paper appeared in <i>Linear and Multilinear Algebra</i> in 2026.</div>
+  <div><b>2026</b>The conjecture is proved, together with every case of equality and a weighted version, and the proof is checked in Lean 4.</div>
+</div>
+
+<h2 id="tensor">4. Why whole numbers were easier</h2>
+<p>For $p=2$, write all the products $v_iv_j$ in a grid. This grid is the tensor square $v\otimes v$. Its diagonal is exactly $v^2$.</p>
+<div class="grid3 sans" aria-label="The tensor square of a vector with three entries">
+  <span class="diag">v₁v₁</span><span>v₁v₂</span><span>v₁v₃</span>
+  <span>v₂v₁</span><span class="diag">v₂v₂</span><span>v₂v₃</span>
+  <span>v₃v₁</span><span>v₃v₂</span><span class="diag">v₃v₃</span>
+</div>
+<p>The full grids satisfy $\langle v\otimes v,w\otimes w\rangle=\langle v,w\rangle^2$ and $\|v\otimes v\|=\|v\|^2$, so the right side of the inequality is the gap of the full grids. Johnston, Plosker, Torrance and Varona showed that throwing away coordinates never increases this kind of gap. Keeping only the diagonal gives the left side, so the inequality follows. With $p$ factors the same argument works for every whole number $p$.</p>
+<p>For $p=2.5$ there is no grid with two and a half factors. This is the reason the real case stayed open, and it needs a different idea.</p>
+
+<h2 id="matrices">5. The new idea: one small matrix per coordinate</h2>
+<p>For each coordinate $i$ put three numbers into a symmetric $2\times2$ matrix,</p>
+<div class="display">$$A_i=\begin{pmatrix}v_i^2&v_iw_i\\ v_iw_i&w_i^2\end{pmatrix}.$$</div>
+<p>Adding these matrices gives the matrix of lengths and inner products of $v$ and $w$, called their Gram matrix. Now raise every entry to the power $p$, which is written $A^{\circ p}$. There are two ways to combine this with the sum.</p>
+<div class="display">$$\htmlClass{vcol}{\sum_i A_i^{\circ p}=\begin{pmatrix}\|v^p\|^2&\langle v^p,w^p\rangle\\ \langle v^p,w^p\rangle&\|w^p\|^2\end{pmatrix}}\qquad \htmlClass{wcol}{\Bigl(\sum_iA_i\Bigr)^{\circ p}=\begin{pmatrix}\|v\|^{2p}&\langle v,w\rangle^p\\ \langle v,w\rangle^p&\|w\|^{2p}\end{pmatrix}}$$</div>
+<p>Powering first and then adding gives the matrix behind the left side. Adding first and then powering gives the matrix behind the right side. The key fact is that for $p\ge2$ the second matrix is always the bigger one:</p>
+<div class="display">$$(A+B)^{\circ p}\;\succeq\;A^{\circ p}+B^{\circ p}\qquad\text{for } p\ge 2 .$$</div>
+<p>Here $M\succeq N$ means that $M-N$ is positive semidefinite. For a $2\times2$ symmetric matrix this is a simple condition: the diagonal entries $a,b$ are nonnegative and the corner entry $c$ satisfies $c^2\le ab$. This fact is a special case of a 2015 theorem of Guillot, Khare and Rajaratnam, who found exactly which powers behave this way for matrices of every size. For $2\times2$ matrices the answer is $p=1$ and every $p\ge2$. So the number 2 in the conjecture is the same number 2 that appears in their theorem. The paper gives a short self-contained proof using the formula</p>
+<div class="display">$$(x+y)^p-x^p-y^p=p(p-1)\,xy\int_0^1\!\!\int_0^1(sx+ty)^{p-2}\,ds\,dt$$</div>
+<p>and the Cauchy–Schwarz inequality for integrals, which works because $p-2\ge0$.</p>
+
+<h2 id="cone">6. The picture: a disk that the difference must stay in</h2>
+<p>A symmetric matrix $\left(\begin{smallmatrix}a&c\\c&b\end{smallmatrix}\right)$ with $a+b>0$ is positive semidefinite exactly when the point</p>
+<div class="display">$$\Bigl(\tfrac{a-b}{a+b},\;\tfrac{2c}{a+b}\Bigr)$$</div>
+<p>lies in the unit disk, because $(a-b)^2+4c^2\le(a+b)^2$ is the same as $c^2\le ab$. The disk is a slice of the cone of positive semidefinite matrices. The plot below shows this point for the difference between the two matrices of Section 5, using the vectors you chose above. For $v=(2,1)$ and $w=(1,2)$, move the exponent and watch the point leave the disk between 1 and 2 and return to it at 2. The preset $v=(3,1,0)$, $w=(1,4,0)$ in Section 2 gives a path that is not straight.</p>
+
+<div class="box widget">
+  <div class="row">
+    <div class="col"><canvas id="diskPlot" width="420" height="420" style="width:100%;max-width:340px"></canvas></div>
+    <div class="col readout">
+      <div>exponent <b id="diskP"></b></div>
+      <div id="diskVerdict" class="verdict" style="margin:6px 0"></div>
+      <div>The grey path is the point for every $p$ from 1 to 4. The marker is the current $p$.</div>
+      <div style="margin-top:10px"><input type="range" id="diskSlider" min="1.01" max="4" step="0.01" aria-label="Exponent p"></div>
+    </div>
+  </div>
+  <figcaption>The difference of the two matrices is positive semidefinite exactly when the marker is inside the disk. The theorem says that for $p\ge2$ it is inside for every pair of nonnegative vectors.</figcaption>
+</div>
+
+<h3>From the matrices back to numbers</h3>
+<p>One last ingredient turns a matrix into a number. Define</p>
+<div class="display">$$\Phi\begin{pmatrix}a&c\\c&b\end{pmatrix}=\sqrt{ab}-c .$$</div>
+<p>Applied to the two matrices of Section 5 it gives exactly the two sides of the inequality. It can be written as the smallest value of $\tfrac12(sa+b/s)-c$ over $s>0$, and each of these expressions increases when the matrix increases in the sense of $\succeq$. So $\Phi$ of the bigger matrix is bigger, and the inequality is proved.</p>
+
+<h2 id="more">7. Beyond the conjecture</h2>
+<h3>When are the two sides equal?</h3>
+<p>For $p>2$ the two sides are equal only in the obvious cases: when $v$ and $w$ are parallel, or when each of them has only one nonzero entry. For $p=2$ there is one more family, in which both vectors live on the same two coordinates and $v_iw_i=v_jw_j$. For example $v=(1,2)$ and $w=(4,2)$ give equality at $p=2$ and a strict inequality for every $p>2$. Try it with the "equality at p = 2" button in Section 2.</p>
+<h3>Weights</h3>
+<p>Put a positive weight $\omega_i$ on each coordinate, so that $\langle x,y\rangle_\omega=\sum_i\omega_ix_iy_i$. The weighted inequality holds for all nonnegative vectors and every $p\ge2$ exactly when $\omega_i\omega_j\ge1$ for every pair of different coordinates. At most one weight can be below 1, and only if the others make up for it.</p>
+<h3>More than two vectors</h3>
+<p>The matrix argument works for $k$ vectors with $k\times k$ Gram matrices, for $p$ a whole number or $p\ge k$, and this range cannot be enlarged.</p>
+
+<h2 id="cooling">8. What it is good for: cooling and sharpening</h2>
+<p>Raise every probability of a distribution $P$ to the power $p$ and divide by the total. The result $P^{(p)}$ is called the escort or tempered distribution. If $P$ is the Boltzmann distribution of a physical system, $P^{(p)}$ is the same system at a temperature $p$ times lower. In machine learning the same map is called sharpening. MixMatch uses $p=2$, and Unsupervised Data Augmentation uses temperature $0.4$, which is $p=2.5$.</p>
+<p>Apply the theorem to $v=\sqrt P$ and $w=\sqrt Q$. The inner product $\langle v,w\rangle$ is the Bhattacharyya coefficient $\mathrm{BC}(P,Q)=\sum_i\sqrt{P_iQ_i}$, which measures how much the two distributions overlap. The theorem becomes</p>
+<div class="display">$$\htmlClass{vcol}{\sqrt{\textstyle\sum_iP_i^p\sum_iQ_i^p}\,\bigl(1-\mathrm{BC}(P^{(p)},Q^{(p)})\bigr)}\;\le\;\htmlClass{wcol}{1-\mathrm{BC}(P,Q)^p},$$</div>
+<p>a limit on how fast cooling or sharpening can pull two distributions apart. It holds for every $p\ge2$ and fails for some pairs when $1&lt;p&lt;2$.</p>
+
+<div class="box widget">
+  <canvas id="coolPlot" width="700" height="260" style="width:100%"></canvas>
+  <div class="row" style="margin-top:8px">
+    <div class="col">
+      <label class="sans" for="coolSlider" style="font-size:14px">cooling factor p = <b id="coolP"></b></label>
+      <input type="range" id="coolSlider" min="1" max="4" step="0.01" value="2.5">
+    </div>
+    <div class="col readout">
+      <div>overlap before <b id="coolBC0"></b>, after <b id="coolBC1"></b></div>
+      <div>left side <b id="coolL" class="vcol"></b>, right side <b id="coolR" class="wcol"></b></div>
+      <div id="coolVerdict" class="verdict"></div>
+    </div>
+  </div>
+  <div style="margin-top:6px"><button data-cool="six">six states</button><button data-cool="two">two states: (0.8, 0.2) and (0.2, 0.8)</button></div>
+  <figcaption>Two distributions shown after cooling by the factor p. For the six-state example the bound holds for every p shown. For the two-state example it fails for every p strictly between 1 and 2, which is why the theorem needs p ≥ 2.</figcaption>
+</div>
+<p>The <a href="applications.pdf">applications report</a> goes through this and other consequences in detail, including partition functions, densities of states, kernel methods and the quantum origin of the problem, and marks clearly which statements are proved and which are proposals.</p>
+
+<h2 id="lean">9. Checked by a computer</h2>
+<p>Every step of the main theorem, the equality cases and the weighted characterisation is checked by Lean 4 with the Mathlib library. This is the conjecture as it is stated in Lean, followed by its proof.</p>
+<pre><code>def Conjecture_5_1 : Prop :=
+  ∀ n : ℕ, 1 ≤ n → ∀ p : ℝ, 2 ≤ p → ∀ v w : EuclideanSpace ℝ (Fin n),
+    (∀ i, 0 &lt; v i) → (∀ i, 0 &lt; w i) →
+      ‖epow p v‖ * ‖epow p w‖ - inner ℝ (epow p v) (epow p w)
+        ≤ ‖v‖ ^ p * ‖w‖ ^ p - (inner ℝ v w) ^ p
+
+theorem conjecture_5_1_true : Conjecture_5_1</code></pre>
+<p>The repository's check script builds the project, fails if any proof is missing, and prints the axioms that the main theorems use. They are only the three standard axioms of Lean's logic.</p>
+
+<div class="links sans" id="links">
+  <a href="https://github.com/pragyaangaur/Real-Power-Cauchy-Schwarz">Lean proof on GitHub</a>
+  <a href="https://arxiv.org/abs/2507.10327">Johnston, Plosker, Torrance and Varona (arXiv:2507.10327)</a>
+</div>
+
+<footer>
+  <p>Written by Pragyaan Gaur in October 2026 for the Principia Math project MathDB 369283. The first informal proof of the conjecture came from the automated system of the Principia Math project. This page was prepared with help from Claude (Anthropic). All interactive plots compute the two sides of the inequality directly in your browser.</p>
+</footer>
+</main>
+
+<script>
+// Links that exist only after publication. Fill these in and the page shows them.
+const LINKS = {
+  paper: "",          // Zenodo record of the paper
+  video: "",          // YouTube video
+  applications: "",   // applications report
+  principia: "",      // Principia project page
+};
+(function addLinks() {
+  const box = document.getElementById("links");
+  const names = { paper: "Paper", video: "Video", applications: "Applications report", principia: "Principia project" };
+  for (const [k, url] of Object.entries(LINKS)) {
+    if (!url) continue;
+    const a = document.createElement("a");
+    a.href = url; a.textContent = names[k];
+    box.prepend(a);
+  }
+})();
+
+// Theme toggle. The choice is remembered in this browser only.
+(function theme() {
+  const root = document.documentElement;
+  try { const t = localStorage.getItem("rpcs-theme"); if (t) root.dataset.theme = t; } catch (e) {}
+  document.getElementById("theme").addEventListener("click", () => {
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("rpcs-theme", root.dataset.theme); } catch (e) {}
+    redrawAll();
+  });
+})();
+
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const fmt = (x, d = 3) => (Math.abs(x) >= 1e5 ? x.toExponential(2) : x.toFixed(d));
+
+function sides(v, w, p) {
+  const pw = (x) => (x === 0 ? 0 : Math.pow(x, p));
+  let vv = 0, ww = 0, vw = 0, vpp = 0, wpp = 0, vpwp = 0;
+  for (let i = 0; i < v.length; i++) {
+    vv += v[i] * v[i]; ww += w[i] * w[i]; vw += v[i] * w[i];
+    const a = pw(v[i]), b = pw(w[i]);
+    vpp += a * a; wpp += b * b; vpwp += a * b;
+  }
+  const L = Math.sqrt(vpp) * Math.sqrt(wpp) - vpwp;
+  const R = Math.pow(Math.sqrt(vv) * Math.sqrt(ww), p) - Math.pow(vw, p);
+  // Entries of Gram(v,w)^p - Gram(v^p,w^p).
+  const D = { a: Math.pow(vv, p) - vpp, b: Math.pow(ww, p) - wpp, c: Math.pow(vw, p) - vpwp };
+  return { L, R, D };
+}
+
+function setupCanvas(canvas) {
+  const ctx = canvas.getContext("2d");
+  const ratio = window.devicePixelRatio || 1;
+  const w = canvas.width, h = canvas.height;
+  if (!canvas.dataset.base) { canvas.dataset.base = `${w}x${h}`; }
+  const [bw, bh] = canvas.dataset.base.split("x").map(Number);
+  canvas.width = bw * ratio; canvas.height = bh * ratio;
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  return { ctx, w: bw, h: bh };
+}
+
+// Section 1: draggable vectors.
+const cs = { v: [3.2, 1.0], w: [1.4, 2.6] };
+function drawCS() {
+  const svg = document.getElementById("csSvg");
+  const O = [30, 230], s = 50;
+  const P = (x) => [O[0] + x[0] * s, O[1] - x[1] * s];
+  const [vx, vy] = P(cs.v), [wx, wy] = P(cs.w);
+  const arrow = (x, y, col, id) => {
+    const ang = Math.atan2(y - O[1], x - O[0]);
+    const hx = x - 12 * Math.cos(ang - 0.4), hy = y - 12 * Math.sin(ang - 0.4);
+    const kx = x - 12 * Math.cos(ang + 0.4), ky = y - 12 * Math.sin(ang + 0.4);
+    return `<line x1="${O[0]}" y1="${O[1]}" x2="${x}" y2="${y}" stroke="${col}" stroke-width="4"/>
+      <polygon points="${x},${y} ${hx},${hy} ${kx},${ky}" fill="${col}"/>
+      <circle class="handle" data-id="${id}" cx="${x}" cy="${y}" r="13" fill="${col}" fill-opacity="0.18" style="cursor:grab"/>`;
+  };
+  svg.innerHTML = `
+    <line x1="${O[0]}" y1="${O[1]}" x2="310" y2="${O[1]}" stroke="${css("--faint")}" stroke-width="2"/>
+    <line x1="${O[0]}" y1="${O[1]}" x2="${O[0]}" y2="10" stroke="${css("--faint")}" stroke-width="2"/>
+    ${arrow(vx, vy, css("--v"), "v")}${arrow(wx, wy, css("--w"), "w")}
+    <text x="${vx + 8}" y="${vy + 4}" fill="${css("--v")}" font-style="italic" font-size="18">v</text>
+    <text x="${wx + 8}" y="${wy - 4}" fill="${css("--w")}" font-style="italic" font-size="18">w</text>`;
+  const ip = cs.v[0] * cs.w[0] + cs.v[1] * cs.w[1];
+  const nn = Math.hypot(...cs.v) * Math.hypot(...cs.w);
+  document.getElementById("csV").textContent = `(${cs.v[0].toFixed(1)}, ${cs.v[1].toFixed(1)})`;
+  document.getElementById("csW").textContent = `(${cs.w[0].toFixed(1)}, ${cs.w[1].toFixed(1)})`;
+  document.getElementById("csIp").textContent = ip.toFixed(2);
+  document.getElementById("csNN").textContent = nn.toFixed(2);
+  document.getElementById("csGap").textContent = (nn - ip).toFixed(2);
+  const width = Math.min(260, (nn - ip) * 25);
+  document.getElementById("csBar").innerHTML = `<rect x="0" y="2" width="${Math.max(1, width)}" height="14" rx="3" fill="${css("--gold")}"/>`;
+}
+(function csDrag() {
+  const svg = document.getElementById("csSvg");
+  let target = null;
+  const toModel = (evt) => {
+    const r = svg.getBoundingClientRect();
+    const x = (evt.clientX - r.left) * (320 / r.width), y = (evt.clientY - r.top) * (260 / r.height);
+    return [Math.min(5.5, Math.max(0, (x - 30) / 50)), Math.min(4.4, Math.max(0, (230 - y) / 50))];
+  };
+  svg.addEventListener("pointerdown", (e) => {
+    const id = e.target.dataset && e.target.dataset.id;
+    if (id) { target = id; svg.setPointerCapture(e.pointerId); }
+  });
+  svg.addEventListener("pointermove", (e) => {
+    if (!target) return;
+    const m = toModel(e);
+    if (Math.hypot(...m) > 0.3) { cs[target] = m; drawCS(); }
+  });
+  svg.addEventListener("pointerup", () => { target = null; });
+})();
+
+// Section 2: explorer.
+const ex = { v: [2, 1, 0], w: [1, 2, 0], p: 1.5 };
+const PRESETS = {
+  classic: { v: [2, 1, 0], w: [1, 2, 0], p: 1.5 },
+  three: { v: [3, 1, 0], w: [1, 4, 0], p: 1.5 },
+  eq2: { v: [1, 2, 0], w: [4, 2, 0], p: 2 },
+  parallel: { v: [1, 2, 3], w: [2, 4, 6], p: 2.7 },
+};
+function buildSliders() {
+  const box = document.getElementById("sliders");
+  const rows = [];
+  for (const name of ["v", "w"]) {
+    for (let i = 0; i < 3; i++) {
+      rows.push(`<label class="${name}col" for="s_${name}${i}">${name}<sub>${i + 1}</sub></label>
+        <input type="range" id="s_${name}${i}" min="0" max="5" step="0.1" data-vec="${name}" data-i="${i}">
+        <output id="o_${name}${i}"></output>`);
+    }
+  }
+  rows.push(`<label for="s_p"><i>p</i></label><input type="range" id="s_p" min="0.5" max="4" step="0.01"><output id="o_p"></output>`);
+  box.innerHTML = rows.join("");
+  box.addEventListener("input", (e) => {
+    const t = e.target;
+    if (t.id === "s_p") ex.p = parseFloat(t.value);
+    else ex[t.dataset.vec][+t.dataset.i] = parseFloat(t.value);
+    syncDisk(); drawExplorer(); drawDisk();
+  });
+  document.querySelectorAll("[data-preset]").forEach((b) => b.addEventListener("click", () => {
+    const k = b.dataset.preset;
+    if (k === "random") {
+      ex.v = ex.v.map(() => Math.round(Math.random() * 50) / 10);
+      ex.w = ex.w.map(() => Math.round(Math.random() * 50) / 10);
+    } else {
+      ex.v = PRESETS[k].v.slice(); ex.w = PRESETS[k].w.slice(); ex.p = PRESETS[k].p;
+    }
+    syncDisk(); drawExplorer(); drawDisk();
+  }));
+}
+function drawExplorer() {
+  for (const name of ["v", "w"]) for (let i = 0; i < 3; i++) {
+    document.getElementById(`s_${name}${i}`).value = ex[name][i];
+    document.getElementById(`o_${name}${i}`).textContent = ex[name][i].toFixed(1);
+  }
+  document.getElementById("s_p").value = ex.p;
+  document.getElementById("o_p").textContent = ex.p.toFixed(2);
+  const { L, R } = sides(ex.v, ex.w, ex.p);
+  document.getElementById("exL").textContent = fmt(L);
+  document.getElementById("exR").textContent = fmt(R);
+  const tol = 1e-9 * Math.max(1, Math.abs(R));
+  const verdict = document.getElementById("exVerdict");
+  if (Math.abs(L - R) <= tol) { verdict.textContent = "The two sides are equal."; verdict.className = "verdict ok"; }
+  else if (L < R) { verdict.textContent = "The inequality holds."; verdict.className = "verdict ok"; }
+  else { verdict.textContent = "The inequality fails."; verdict.className = "verdict no"; }
+
+  const canvas = document.getElementById("exPlot");
+  const { ctx, w, h } = setupCanvas(canvas);
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 40, r: 12, t: 12, b: 28 };
+  const X = (p) => pad.l + ((p - 0.5) / 3.5) * (w - pad.l - pad.r);
+  const Y = (y) => pad.t + (1 - (y + 1) / 2) * (h - pad.t - pad.b);
+  ctx.fillStyle = css("--bad"); ctx.globalAlpha = 0.1;
+  ctx.fillRect(X(1), pad.t, X(2) - X(1), h - pad.t - pad.b); ctx.globalAlpha = 1;
+  ctx.strokeStyle = css("--faint"); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad.l, Y(0)); ctx.lineTo(w - pad.r, Y(0)); ctx.stroke();
+  ctx.fillStyle = css("--muted"); ctx.font = "12px Avenir Next, Arial, sans-serif";
+  for (let p = 0.5; p <= 4.001; p += 0.5) {
+    ctx.fillText(p.toFixed(1), X(p) - 9, h - 8);
+    ctx.beginPath(); ctx.moveTo(X(p), Y(0) - 3); ctx.lineTo(X(p), Y(0) + 3); ctx.stroke();
+  }
+  ctx.fillText("holds", pad.l - 36, Y(0.6)); ctx.fillText("fails", pad.l - 32, Y(-0.6));
+  const f = (p) => { const s = sides(ex.v, ex.w, p); const m = Math.max(Math.abs(s.L), Math.abs(s.R)); return m < 1e-12 ? 0 : (s.R - s.L) / m; };
+  // Stretch small values so that the dip between 1 and 2 is visible.
+  const g = (y) => Math.sign(y) * Math.pow(Math.abs(y), 0.4);
+  ctx.lineWidth = 2.5;
+  let prev = null;
+  for (let k = 0; k <= 700; k++) {
+    const p = 0.5 + (3.5 * k) / 700, y = g(f(p));
+    const pt = [X(p), Y(y)];
+    if (prev) {
+      ctx.strokeStyle = y < -1e-6 ? css("--bad") : css("--gold");
+      ctx.beginPath(); ctx.moveTo(...prev); ctx.lineTo(...pt); ctx.stroke();
+    }
+    prev = pt;
+  }
+  const yp = g(f(ex.p));
+  ctx.fillStyle = yp < -1e-6 ? css("--bad") : css("--good");
+  ctx.beginPath(); ctx.arc(X(ex.p), Y(yp), 6, 0, 2 * Math.PI); ctx.fill();
+}
+
+// Section 6: the disk.
+let diskP = 1.5;
+function syncDisk() { diskP = Math.max(1.01, ex.p); document.getElementById("diskSlider").value = diskP; }
+function diskPoint(p) {
+  const { D } = sides(ex.v, ex.w, p);
+  const s = D.a + D.b;
+  if (!(s > 1e-12)) return null;
+  return [(D.a - D.b) / s, (2 * D.c) / s];
+}
+function drawDisk() {
+  const canvas = document.getElementById("diskPlot");
+  const { ctx, w, h } = setupCanvas(canvas);
+  ctx.clearRect(0, 0, w, h);
+  const C = [w / 2, h / 2], r = w * 0.32;
+  const toPx = (pt) => [C[0] + pt[0] * r, C[1] - pt[1] * r];
+  ctx.fillStyle = css("--good"); ctx.globalAlpha = 0.12;
+  ctx.beginPath(); ctx.arc(C[0], C[1], r, 0, 2 * Math.PI); ctx.fill(); ctx.globalAlpha = 1;
+  ctx.strokeStyle = css("--good"); ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(C[0], C[1], r, 0, 2 * Math.PI); ctx.stroke();
+  ctx.strokeStyle = css("--faint"); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(C[0] - 1.45 * r, C[1]); ctx.lineTo(C[0] + 1.45 * r, C[1]); ctx.moveTo(C[0], C[1] - 1.45 * r); ctx.lineTo(C[0], C[1] + 1.45 * r); ctx.stroke();
+  ctx.strokeStyle = css("--muted"); ctx.lineWidth = 1.5; ctx.beginPath();
+  let started = false;
+  for (let k = 0; k <= 300; k++) {
+    const p = 1.01 + (3 - 0.01) * k / 300, pt = diskPoint(p);
+    if (!pt) continue;
+    const q = toPx([Math.max(-1.45, Math.min(1.45, pt[0])), Math.max(-1.45, Math.min(1.45, pt[1]))]);
+    if (!started) { ctx.moveTo(...q); started = true; } else ctx.lineTo(...q);
+  }
+  ctx.stroke();
+  const pt = diskPoint(diskP);
+  const label = document.getElementById("diskVerdict");
+  document.getElementById("diskP").textContent = diskP.toFixed(2);
+  if (!pt) {
+    label.textContent = "The difference is zero for these vectors, so the two sides are equal for every p.";
+    label.className = "verdict ok";
+    return;
+  }
+  const inside = pt[0] * pt[0] + pt[1] * pt[1] <= 1 + 1e-9;
+  const q = toPx([Math.max(-1.45, Math.min(1.45, pt[0])), Math.max(-1.45, Math.min(1.45, pt[1]))]);
+  ctx.fillStyle = inside ? css("--good") : css("--bad");
+  ctx.beginPath(); ctx.arc(q[0], q[1], 8, 0, 2 * Math.PI); ctx.fill();
+  label.textContent = inside ? "Inside the disk: the matrix inequality holds." : "Outside the disk: the matrix inequality fails.";
+  label.className = "verdict " + (inside ? "ok" : "no");
+}
+document.getElementById("diskSlider").addEventListener("input", (e) => { diskP = parseFloat(e.target.value); drawDisk(); });
+
+// Section 8: cooling.
+const EXAMPLES = {
+  six: [[0.0, 0.6, 1.1, 1.5, 2.4, 3.0], [1.2, 0.2, 0.9, 2.0, 0.5, 2.6]],
+  two: [[-Math.log(0.8), -Math.log(0.2)], [-Math.log(0.2), -Math.log(0.8)]],
+};
+let E = EXAMPLES.six[0], F = EXAMPLES.six[1];
+document.querySelectorAll("[data-cool]").forEach((b) => b.addEventListener("click", () => {
+  [E, F] = EXAMPLES[b.dataset.cool];
+  if (b.dataset.cool === "two") document.getElementById("coolSlider").value = 1.5;
+  drawCool();
+}));
+const gibbs = (en, beta) => { const ws = en.map((x) => Math.exp(-beta * x)); const z = ws.reduce((a, b) => a + b); return ws.map((x) => x / z); };
+const bcoef = (P, Q) => P.reduce((s, x, i) => s + Math.sqrt(x * Q[i]), 0);
+function drawCool() {
+  const p = parseFloat(document.getElementById("coolSlider").value);
+  document.getElementById("coolP").textContent = p.toFixed(2);
+  const P = gibbs(E, 1), Q = gibbs(F, 1);
+  const Pp = gibbs(E, p), Qp = gibbs(F, p);
+  const sP = P.reduce((s, x) => s + Math.pow(x, p), 0), sQ = Q.reduce((s, x) => s + Math.pow(x, p), 0);
+  const L = Math.sqrt(sP * sQ) * (1 - bcoef(Pp, Qp)), R = 1 - Math.pow(bcoef(P, Q), p);
+  document.getElementById("coolBC0").textContent = bcoef(P, Q).toFixed(3);
+  document.getElementById("coolBC1").textContent = bcoef(Pp, Qp).toFixed(3);
+  document.getElementById("coolL").textContent = L.toFixed(4);
+  document.getElementById("coolR").textContent = R.toFixed(4);
+  const v = document.getElementById("coolVerdict");
+  const holds = L <= R + 1e-12;
+  v.textContent = holds ? "The bound holds." : "The bound fails at this p.";
+  v.className = "verdict " + (holds ? "ok" : "no");
+
+  const canvas = document.getElementById("coolPlot");
+  const { ctx, w, h } = setupCanvas(canvas);
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 34, r: 10, t: 10, b: 24 };
+  const n = E.length, bw = (w - pad.l - pad.r) / n;
+  const Y = (y) => pad.t + (1 - y) * (h - pad.t - pad.b);
+  ctx.strokeStyle = css("--faint"); ctx.beginPath(); ctx.moveTo(pad.l, Y(0)); ctx.lineTo(w - pad.r, Y(0)); ctx.stroke();
+  ctx.fillStyle = css("--muted"); ctx.font = "12px Avenir Next, Arial, sans-serif";
+  for (const t of [0.25, 0.5, 0.75, 1]) ctx.fillText(t.toFixed(2), 2, Y(t) + 4);
+  for (let i = 0; i < n; i++) {
+    const x0 = pad.l + i * bw;
+    ctx.fillStyle = css("--v"); ctx.fillRect(x0 + bw * 0.15, Y(Pp[i]), bw * 0.32, Y(0) - Y(Pp[i]));
+    ctx.fillStyle = css("--w"); ctx.fillRect(x0 + bw * 0.53, Y(Qp[i]), bw * 0.32, Y(0) - Y(Qp[i]));
+    ctx.fillStyle = css("--muted"); ctx.fillText(`state ${i + 1}`, x0 + bw * 0.28, h - 6);
+  }
+}
+document.getElementById("coolSlider").addEventListener("input", drawCool);
+
+function redrawAll() { drawCS(); drawExplorer(); drawDisk(); drawCool(); }
+buildSliders();
+syncDisk();
+redrawAll();
+window.addEventListener("resize", redrawAll);
+document.addEventListener("DOMContentLoaded", () => {
+  const go = () => window.renderMathInElement && renderMathInElement(document.body, {
+    delimiters: [{ left: "$$", right: "$$", display: true }, { left: "$", right: "$", display: false }],
+    throwOnError: false,
+    strict: false,
+    trust: (ctx) => ctx.command === "\\htmlClass",
+  });
+  if (window.renderMathInElement) go(); else window.addEventListener("load", go);
+});
+</script>
+</body>
+</html>
