@@ -148,4 +148,78 @@ lemma G_pos {p a b : ℝ} (hp : 1 < p) (ha : 0 < a) (hb : 0 < b) : 0 < G p a b :
   rw [e a ha, e b hb, e (a + b) hab]
   nlinarith [mul_lt_mul_of_pos_right h1 ha, mul_lt_mul_of_pos_right h2 hb]
 
+/-! ## Splitting off one pair of indices -/
+
+/-- The defect matrix of a sum dominates the piece coming from any two of its indices. -/
+lemma pair_psd {ι : Type*} [DecidableEq ι] {p : ℝ} (hp : 2 ≤ p) (s : Finset ι)
+    (x y z : ι → ℝ) (hx : ∀ i, 0 ≤ x i) (hy : ∀ i, 0 ≤ y i) (hz : ∀ i, 0 ≤ z i)
+    (hxyz : ∀ i, z i ^ 2 ≤ x i * y i) {i j : ι} (hi : i ∈ s) (hj : j ∈ s) (hij : i ≠ j) :
+    PSD2 ((∑ k ∈ s, x k) ^ p - ∑ k ∈ s, x k ^ p - G p (x i) (x j))
+      ((∑ k ∈ s, y k) ^ p - ∑ k ∈ s, y k ^ p - G p (y i) (y j))
+      ((∑ k ∈ s, z k) ^ p - ∑ k ∈ s, z k ^ p - G p (z i) (z j)) := by
+  set r := (s.erase i).erase j with hr
+  have hsplit : ∀ f : ι → ℝ, ∑ k ∈ s, f k = f i + (f j + ∑ k ∈ r, f k) := fun f => by
+    rw [← Finset.add_sum_erase s f hi,
+      ← Finset.add_sum_erase (s.erase i) f (Finset.mem_erase.2 ⟨hij.symm, hj⟩)]
+  have hR := sum_psd hp r x y z hx hy hz hxyz
+  have hX : 0 ≤ ∑ k ∈ r, x k := Finset.sum_nonneg (fun k _ => hx k)
+  have hY : 0 ≤ ∑ k ∈ r, y k := Finset.sum_nonneg (fun k _ => hy k)
+  have hZ : 0 ≤ ∑ k ∈ r, z k := Finset.sum_nonneg (fun k _ => hz k)
+  have hCSr : (∑ k ∈ r, z k) ^ 2 ≤ (∑ k ∈ r, x k) * ∑ k ∈ r, y k :=
+    Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul r (fun k _ => hx k) (fun k _ => hy k)
+      (fun k _ => hxyz k)
+  have hij2 := (show PSD2 (x i) (y i) (z i) from ⟨hx i, hy i, hxyz i⟩).add
+    (show PSD2 (x j) (y j) (z j) from ⟨hx j, hy j, hxyz j⟩)
+  have hG := G_psd hp (add_nonneg (hx i) (hx j)) hX (add_nonneg (hy i) (hy j)) hY
+    (add_nonneg (hz i) (hz j)) hZ hij2.2.2 hCSr
+  have hsum := hG.add hR
+  have ex := hsplit x
+  have ey := hsplit y
+  have ez := hsplit z
+  have exp := hsplit (fun k => x k ^ p)
+  have eyp := hsplit (fun k => y k ^ p)
+  have ezp := hsplit (fun k => z k ^ p)
+  rw [ex, ey, ez, exp, eyp, ezp]
+  convert hsum using 1 <;> unfold G <;> ring_nf
+
+/-! ## The quadratic form that detects equality -/
+
+lemma form_nonneg {α β γ : ℝ} (u u' : ℝ) (h : PSD2 α β γ) :
+    0 ≤ u' ^ 2 * α + u ^ 2 * β - 2 * u * u' * γ := by
+  obtain ⟨hα, hβ, hγ⟩ := h
+  have hA : 0 ≤ u' ^ 2 * α := by positivity
+  have hB : 0 ≤ u ^ 2 * β := by positivity
+  have hC : (u * u' * γ) ^ 2 ≤ (u' ^ 2 * α) * (u ^ 2 * β) := by
+    have : (u * u' * γ) ^ 2 = u ^ 2 * u' ^ 2 * γ ^ 2 := by ring
+    rw [this]
+    nlinarith [mul_le_mul_of_nonneg_left hγ (by positivity : 0 ≤ u ^ 2 * u' ^ 2)]
+  by_contra hlt
+  push Not at hlt
+  have h2 : u' ^ 2 * α + u ^ 2 * β < 2 * (u * u' * γ) := by linarith
+  have hS : 0 ≤ u' ^ 2 * α + u ^ 2 * β := by positivity
+  have := mul_self_lt_mul_self hS h2
+  nlinarith [sq_nonneg (u' ^ 2 * α - u ^ 2 * β)]
+
+lemma form_zero {α β γ u u' : ℝ} (h : PSD2 α β γ) (hu : 0 < u) (hu' : 0 < u')
+    (h0 : u' ^ 2 * α + u ^ 2 * β - 2 * u * u' * γ = 0) :
+    γ ^ 2 = α * β ∧ u' ^ 2 * α = u ^ 2 * β := by
+  obtain ⟨hα, hβ, hγ⟩ := h
+  have hsq : (u' ^ 2 * α - u ^ 2 * β) ^ 2 = 4 * u ^ 2 * u' ^ 2 * (γ ^ 2 - α * β) := by
+    have hS : u' ^ 2 * α + u ^ 2 * β = 2 * u * u' * γ := by linarith
+    calc (u' ^ 2 * α - u ^ 2 * β) ^ 2
+        = (u' ^ 2 * α + u ^ 2 * β) ^ 2 - 4 * (u' ^ 2 * α) * (u ^ 2 * β) := by ring
+      _ = (2 * u * u' * γ) ^ 2 - 4 * (u' ^ 2 * α) * (u ^ 2 * β) := by rw [hS]
+      _ = _ := by ring
+  have hle : (u' ^ 2 * α - u ^ 2 * β) ^ 2 ≤ 0 := by
+    rw [hsq]
+    have : 0 ≤ 4 * u ^ 2 * u' ^ 2 := by positivity
+    nlinarith
+  have heq : u' ^ 2 * α = u ^ 2 * β := by nlinarith [sq_nonneg (u' ^ 2 * α - u ^ 2 * β)]
+  refine ⟨?_, heq⟩
+  have huu : 0 < 4 * u ^ 2 * u' ^ 2 := by positivity
+  have : 4 * u ^ 2 * u' ^ 2 * (γ ^ 2 - α * β) = 0 := by
+    rw [← hsq, heq]; ring
+  have := (mul_eq_zero.1 this).resolve_left huu.ne'
+  linarith
+
 end RealPowerCauchySchwarz
