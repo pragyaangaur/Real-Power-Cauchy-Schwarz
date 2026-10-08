@@ -1,1 +1,2 @@
 import RealPowerCauchySchwarz.Basic
+import RealPowerCauchySchwarz.Equality
