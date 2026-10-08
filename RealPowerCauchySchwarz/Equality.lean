@@ -222,4 +222,92 @@ lemma form_zero {α β γ u u' : ℝ} (h : PSD2 α β γ) (hu : 0 < u) (hu' : 0 
   have := (mul_eq_zero.1 this).resolve_left huu.ne'
   linarith
 
+/-! ## The two sides as sums -/
+
+/-- The left-hand side `‖v^p‖ ‖w^p‖ - ⟨v^p, w^p⟩` written as sums. -/
+noncomputable def lhs {n : ℕ} (p : ℝ) (v w : Fin n → ℝ) : ℝ :=
+  √(∑ i, (v i ^ p) ^ 2) * √(∑ i, (w i ^ p) ^ 2) - ∑ i, v i ^ p * w i ^ p
+
+/-- The right-hand side `‖v‖^p ‖w‖^p - ⟨v, w⟩^p` written as sums. -/
+noncomputable def rhs {n : ℕ} (p : ℝ) (v w : Fin n → ℝ) : ℝ :=
+  (√(∑ i, v i ^ 2)) ^ p * (√(∑ i, w i ^ 2)) ^ p - (∑ i, v i * w i) ^ p
+
+theorem lhs_le_rhs {n : ℕ} {p : ℝ} (hp : 2 ≤ p) (v w : Fin n → ℝ) (hv : ∀ i, 0 ≤ v i)
+    (hw : ∀ i, 0 ≤ w i) : lhs p v w ≤ rhs p v w :=
+  main_sum n p hp v w hv hw
+
+/-- Equality forces every pair of indices to give a degenerate piece. -/
+lemma pair_of_eq {n : ℕ} {p : ℝ} (hp : 2 ≤ p) {v w : Fin n → ℝ} (hv : ∀ i, 0 ≤ v i)
+    (hw : ∀ i, 0 ≤ w i) (hV : 0 < ∑ i, v i ^ 2) (hW : 0 < ∑ i, w i ^ 2)
+    (heq : lhs p v w = rhs p v w) {i j : Fin n} (hij : i ≠ j) :
+    G p (v i * w i) (v j * w j) ^ 2 = G p (v i ^ 2) (v j ^ 2) * G p (w i ^ 2) (w j ^ 2) ∧
+    (∑ k, w k ^ 2) ^ p * G p (v i ^ 2) (v j ^ 2)
+      = (∑ k, v k ^ 2) ^ p * G p (w i ^ 2) (w j ^ 2) := by
+  unfold lhs rhs at heq
+  have e1 : ∀ i, (v i ^ p) ^ 2 = (v i ^ 2) ^ p := fun i => by
+    rw [sq, sq, Real.mul_rpow (hv i) (hv i)]
+  have e2 : ∀ i, (w i ^ p) ^ 2 = (w i ^ 2) ^ p := fun i => by
+    rw [sq, sq, Real.mul_rpow (hw i) (hw i)]
+  have e3 : ∀ i, v i ^ p * w i ^ p = (v i * w i) ^ p := fun i =>
+    (Real.mul_rpow (hv i) (hw i)).symm
+  simp only [e1, e2, e3] at heq
+  rw [sqrt_rpow_eq hV.le, sqrt_rpow_eq hW.le] at heq
+  have hxyz : ∀ k, (v k * w k) ^ 2 ≤ v k ^ 2 * w k ^ 2 := fun k => by rw [mul_pow]
+  have hT := sum_psd hp Finset.univ (fun k => v k ^ 2) (fun k => w k ^ 2) (fun k => v k * w k)
+    (fun k => sq_nonneg _) (fun k => sq_nonneg _) (fun k => mul_nonneg (hv k) (hw k)) hxyz
+  have hP := pair_psd hp Finset.univ (fun k => v k ^ 2) (fun k => w k ^ 2) (fun k => v k * w k)
+    (fun k => sq_nonneg _) (fun k => sq_nonneg _) (fun k => mul_nonneg (hv k) (hw k)) hxyz
+    (Finset.mem_univ i) (Finset.mem_univ j) hij
+  have hX := G_psd hp (sq_nonneg (v i)) (sq_nonneg (v j)) (sq_nonneg (w i)) (sq_nonneg (w j))
+    (mul_nonneg (hv i) (hw i)) (mul_nonneg (hv j) (hw j)) (hxyz i) (hxyz j)
+  set P := (∑ k, v k ^ 2) ^ p with hPdef
+  set Q := (∑ k, w k ^ 2) ^ p with hQdef
+  set a := ∑ k, (v k ^ 2) ^ p
+  set b := ∑ k, (w k ^ 2) ^ p
+  set d := ∑ k, (v k * w k) ^ p
+  set Zp := (∑ k, v k * w k) ^ p
+  set X11 := G p (v i ^ 2) (v j ^ 2)
+  set X22 := G p (w i ^ 2) (w j ^ 2)
+  set X12 := G p (v i * w i) (v j * w j)
+  have ha : 0 ≤ a := Finset.sum_nonneg (fun k _ => Real.rpow_nonneg (sq_nonneg _) _)
+  have hb : 0 ≤ b := Finset.sum_nonneg (fun k _ => Real.rpow_nonneg (sq_nonneg _) _)
+  have hP0 : 0 < P := Real.rpow_pos_of_pos hV _
+  have hQ0 : 0 < Q := Real.rpow_pos_of_pos hW _
+  set u := √P with hu
+  set u' := √Q with hu'
+  set e := √a with he
+  set e' := √b with he'
+  have hu0 : 0 < u := Real.sqrt_pos.2 hP0
+  have hu'0 : 0 < u' := Real.sqrt_pos.2 hQ0
+  have hue : u ^ 2 = P := Real.sq_sqrt hP0.le
+  have hue' : u' ^ 2 = Q := Real.sq_sqrt hQ0.le
+  have hee : e ^ 2 = a := Real.sq_sqrt ha
+  have hee' : e' ^ 2 = b := Real.sq_sqrt hb
+  have he0 : 0 ≤ e := Real.sqrt_nonneg _
+  have he'0 : 0 ≤ e' := Real.sqrt_nonneg _
+  -- equality in the final step
+  have hγ : Zp - d = u * u' - e * e' := by linarith
+  obtain ⟨-, -, hT3⟩ := hT
+  rw [hγ, ← hue, ← hue', ← hee, ← hee'] at hT3
+  have hcross : (u * e' - e * u') ^ 2 = 0 := by
+    have : (u * e' - e * u') ^ 2
+        = (u * u' - e * e') ^ 2 - (u ^ 2 - e ^ 2) * (u' ^ 2 - e' ^ 2) := by ring
+    nlinarith [sq_nonneg (u * e' - e * u')]
+  have hcross' : u * e' = e * u' := by
+    have := pow_eq_zero_iff (n := 2) (by norm_num) |>.1 hcross
+    linarith
+  have hformT : u' ^ 2 * (P - a) + u ^ 2 * (Q - b) - 2 * u * u' * (Zp - d) = 0 := by
+    rw [hγ, ← hue, ← hue', ← hee, ← hee']
+    have : (u' * e - u * e') ^ 2 = 0 := by rw [← hcross]; ring
+    nlinarith [this]
+  have hfP := form_nonneg u u' hP
+  have hfX := form_nonneg u u' hX
+  have hformX : u' ^ 2 * X11 + u ^ 2 * X22 - 2 * u * u' * X12 = 0 := by
+    have : u' ^ 2 * (P - a) + u ^ 2 * (Q - b) - 2 * u * u' * (Zp - d)
+        = (u' ^ 2 * (P - a - X11) + u ^ 2 * (Q - b - X22) - 2 * u * u' * (Zp - d - X12))
+          + (u' ^ 2 * X11 + u ^ 2 * X22 - 2 * u * u' * X12) := by ring
+    linarith
+  obtain ⟨h1, h2⟩ := form_zero hX hu0 hu'0 hformX
+  exact ⟨h1, by rw [← hue, ← hue']; exact h2⟩
+
 end RealPowerCauchySchwarz
