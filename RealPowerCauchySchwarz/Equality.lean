@@ -506,4 +506,89 @@ theorem eq_iff_of_two_lt {n : ℕ} {p : ℝ} (hp : 2 < p) (v w : Fin n → ℝ) 
       · exact (mul_eq_zero.1 ((hsp l m (Ne.symm hm)).1)).resolve_left hvl
       · exact (mul_eq_zero.1 ((hsp k m (Ne.symm hm)).2)).resolve_left hwk
 
+/-! ## The case `p = 2` -/
+
+lemma G_two (a b : ℝ) : G 2 a b = 2 * a * b := by
+  unfold G; simp only [Real.rpow_two]; ring
+
+/-- **Equality for `p = 2`.** For entrywise nonnegative `v, w`, equality holds in Theorem 1 with
+`p = 2` if and only if `v` and `w` are linearly dependent, or there are indices `i ≠ j` outside
+which both vectors vanish and `v i w i = v j w j`. -/
+theorem eq_iff_two {n : ℕ} (v w : Fin n → ℝ) (hv : ∀ i, 0 ≤ v i) (hw : ∀ i, 0 ≤ w i) :
+    lhs 2 v w = rhs 2 v w ↔
+      ((∀ i j, v i * w j = v j * w i) ∨
+        ∃ i j, i ≠ j ∧ (∀ k, k ≠ i → k ≠ j → v k = 0 ∧ w k = 0) ∧ v i * w i = v j * w j) := by
+  constructor
+  · intro heq
+    have hV0 : 0 ≤ ∑ i, v i ^ 2 := Finset.sum_nonneg (fun k _ => sq_nonneg _)
+    have hW0 : 0 ≤ ∑ i, w i ^ 2 := Finset.sum_nonneg (fun k _ => sq_nonneg _)
+    rcases hV0.eq_or_lt with hV | hV
+    · left; intro i j; rw [sum_sq_eq_zero hV.symm i, sum_sq_eq_zero hV.symm j]; ring
+    rcases hW0.eq_or_lt with hW | hW
+    · left; intro i j; rw [sum_sq_eq_zero hW.symm i, sum_sq_eq_zero hW.symm j]; ring
+    by_cases hmin : ∀ i j, v i * w j = v j * w i
+    · exact Or.inl hmin
+    right
+    push Not at hmin
+    obtain ⟨i0, j0, hne⟩ := hmin
+    have hij : i0 ≠ j0 := by rintro rfl; exact hne rfl
+    set V := ∑ k, v k ^ 2 with hVdef
+    set W := ∑ k, w k ^ 2 with hWdef
+    -- the pairwise relation `W v_k v_l = V w_k w_l`
+    have hpair : ∀ k l, k ≠ l → W * (v k * v l) = V * (w k * w l) := by
+      intro k l hkl
+      have h2 := (pair_of_eq (le_refl 2) hv hw hV hW heq hkl).2
+      simp only [G_two, Real.rpow_two] at h2
+      have h3 : (W * (v k * v l)) ^ 2 = (V * (w k * w l)) ^ 2 := by nlinarith [h2]
+      have hv' : 0 ≤ W * (v k * v l) := by have := hv k; have := hv l; positivity
+      have hw' : 0 ≤ V * (w k * w l) := by have := hw k; have := hw l; positivity
+      exact (pow_left_inj₀ hv' hw' (by norm_num)).1 h3
+    have hd : v i0 * w j0 - v j0 * w i0 ≠ 0 := sub_ne_zero.2 hne
+    have hrest : ∀ k, k ≠ i0 → k ≠ j0 → v k = 0 ∧ w k = 0 := by
+      intro k hki hkj
+      have a1 := hpair i0 k (Ne.symm hki)
+      have a2 := hpair j0 k (Ne.symm hkj)
+      constructor
+      · have : W * v k * (v i0 * w j0 - v j0 * w i0) = 0 := by
+          have b1 := hpair i0 j0 hij
+          linear_combination (w j0) * a1 - (w i0) * a2 + 0 * b1
+        have hWv : W * v k = 0 := (mul_eq_zero.1 this).resolve_right hd
+        exact (mul_eq_zero.1 hWv).resolve_left hW.ne'
+      · have : V * w k * (v i0 * w j0 - v j0 * w i0) = 0 := by
+          linear_combination (v j0) * a1 - (v i0) * a2
+        have hVw : V * w k = 0 := (mul_eq_zero.1 this).resolve_right hd
+        exact (mul_eq_zero.1 hVw).resolve_left hV.ne'
+    refine ⟨i0, j0, hij, hrest, ?_⟩
+    have hVs : V = v i0 ^ 2 + v j0 ^ 2 :=
+      Fintype.sum_eq_add i0 j0 hij (fun k hk => by rw [(hrest k hk.1 hk.2).1]; ring)
+    have hWs : W = w i0 ^ 2 + w j0 ^ 2 :=
+      Fintype.sum_eq_add i0 j0 hij (fun k hk => by rw [(hrest k hk.1 hk.2).2]; ring)
+    have b1 := hpair i0 j0 hij
+    rw [hVs, hWs] at b1
+    have : (v i0 * w j0 - v j0 * w i0) * (v i0 * w i0 - v j0 * w j0) = 0 := by
+      linear_combination -b1
+    have := (mul_eq_zero.1 this).resolve_left hd
+    linarith
+  · rintro (hmin | ⟨i, j, hij, hrest, hm⟩)
+    · exact eq_of_minors two_pos v w hv hw hmin
+    unfold lhs rhs
+    simp only [Real.rpow_two]
+    have sum2 : ∀ f : Fin n → ℝ, (∀ k, k ≠ i → k ≠ j → f k = 0) → ∑ k, f k = f i + f j :=
+      fun f hf => Fintype.sum_eq_add i j hij (fun k hk => hf k hk.1 hk.2)
+    rw [sum2 (fun k => (v k ^ 2) ^ 2) (fun k h1 h2 => by simp [(hrest k h1 h2).1]),
+      sum2 (fun k => (w k ^ 2) ^ 2) (fun k h1 h2 => by simp [(hrest k h1 h2).2]),
+      sum2 (fun k => v k ^ 2 * w k ^ 2) (fun k h1 h2 => by simp [(hrest k h1 h2).1]),
+      sum2 (fun k => v k ^ 2) (fun k h1 h2 => by simp [(hrest k h1 h2).1]),
+      sum2 (fun k => w k ^ 2) (fun k h1 h2 => by simp [(hrest k h1 h2).2]),
+      sum2 (fun k => v k * w k) (fun k h1 h2 => by simp [(hrest k h1 h2).1]),
+      Real.sq_sqrt (by positivity), Real.sq_sqrt (by positivity), ← Real.sqrt_mul (by positivity)]
+    set X := (v i * w j) ^ 2 + (v j * w i) ^ 2 with hX
+    have hprod : ((v i ^ 2) ^ 2 + (v j ^ 2) ^ 2) * ((w i ^ 2) ^ 2 + (w j ^ 2) ^ 2) = X ^ 2 := by
+      have hm2 : v i ^ 2 * w i ^ 2 = v j ^ 2 * w j ^ 2 := by
+        rw [← mul_pow, ← mul_pow, hm]
+      rw [hX]
+      linear_combination (v i ^ 2 * w i ^ 2 - v j ^ 2 * w j ^ 2) * hm2
+    rw [hprod, Real.sqrt_sq (by positivity), hX]
+    linear_combination (v j * w j - v i * w i) * hm
+
 end RealPowerCauchySchwarz
