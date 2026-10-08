@@ -147,4 +147,224 @@ lemma merge {p A B e : ℝ} (hp : 1 ≤ p) (hA : 0 ≤ A) (he : 0 ≤ e) (heB : 
   rw [e1, e2] at this
   exact this
 
+/-- The weighted left-hand side `‖v^p‖_ω ‖w^p‖_ω - ⟨v^p, w^p⟩_ω`. -/
+noncomputable def wLHS {n : ℕ} (ω : Fin n → ℝ) (p : ℝ) (v w : Fin n → ℝ) : ℝ :=
+  √(∑ i, ω i * (v i ^ p) ^ 2) * √(∑ i, ω i * (w i ^ p) ^ 2) - ∑ i, ω i * (v i ^ p * w i ^ p)
+
+/-- The weighted right-hand side `‖v‖_ω^p ‖w‖_ω^p - ⟨v, w⟩_ω^p`. -/
+noncomputable def wRHS {n : ℕ} (ω : Fin n → ℝ) (p : ℝ) (v w : Fin n → ℝ) : ℝ :=
+  (√(∑ i, ω i * v i ^ 2)) ^ p * (√(∑ i, ω i * w i ^ 2)) ^ p - (∑ i, ω i * (v i * w i)) ^ p
+
+/-- The extra positive semidefinite term `(ω^(p-1) - t) ω Q` coming from a weight `ω` whose
+`(p-1)`-st power is at least `t`. -/
+lemma psd2_extra {p t ω x y : ℝ} (hω : 0 < ω) (hx : 0 ≤ x) (hy : 0 ≤ y)
+    (h : t ≤ ω ^ (p - 1)) :
+    PSD2 ((ω * x ^ 2) ^ p - t * (ω * (x ^ p) ^ 2)) ((ω * y ^ 2) ^ p - t * (ω * (y ^ p) ^ 2))
+      ((ω * (x * y)) ^ p - t * (ω * (x ^ p * y ^ p))) := by
+  have key : ∀ z : ℝ, 0 ≤ z → (ω * z) ^ p = ω ^ (p - 1) * (ω * z ^ p) := fun z hz => by
+    rw [Real.mul_rpow hω.le hz, ← mul_assoc, ← Real.rpow_add_one hω.ne']
+    ring_nf
+  have hx2 : (x ^ 2) ^ p = (x ^ p) ^ 2 := by
+    rw [sq, sq, Real.mul_rpow hx hx]
+  have hy2 : (y ^ 2) ^ p = (y ^ p) ^ 2 := by
+    rw [sq, sq, Real.mul_rpow hy hy]
+  rw [key _ (sq_nonneg x), key _ (sq_nonneg y), key _ (mul_nonneg hx hy), hx2, hy2,
+    Real.mul_rpow hx hy]
+  have hc : 0 ≤ (ω ^ (p - 1) - t) * ω := mul_nonneg (by linarith) hω.le
+  have := (psd2_pow (p := p) (x := x) (y := y)).smul hc
+  convert this using 1 <;> ring
+
+lemma sqrt_rpow_mul {X Y p : ℝ} (hX : 0 ≤ X) (hY : 0 ≤ Y) :
+    (√X) ^ p * (√Y) ^ p = (X * Y) ^ (p / 2) := by
+  rw [← Real.mul_rpow (Real.sqrt_nonneg _) (Real.sqrt_nonneg _), ← Real.sqrt_mul hX,
+    Real.sqrt_eq_rpow, ← Real.rpow_mul (by positivity)]
+  ring_nf
+
+/-- **Sufficiency.** If every product of two different weights is at least one, the weighted
+inequality holds for every real `p ≥ 2`. -/
+theorem weighted_of_pairwise {n : ℕ} (ω : Fin n → ℝ) (hω : ∀ i, 0 < ω i)
+    (hpair : ∀ i j, i ≠ j → 1 ≤ ω i * ω j) (p : ℝ) (hp : 2 ≤ p) (v w : Fin n → ℝ)
+    (hv : ∀ i, 0 ≤ v i) (hw : ∀ i, 0 ≤ w i) : wLHS ω p v w ≤ wRHS ω p v w := by
+  classical
+  have hp1 : 1 ≤ p := by linarith
+  have hp0 : 0 < p := by linarith
+  -- the generic final step, comparing two defects
+  unfold wLHS wRHS
+  by_cases hall : ∀ i, 1 ≤ ω i
+  · -- every weight is at least one
+    have hS := sum_psd hp Finset.univ (fun i => ω i * v i ^ 2) (fun i => ω i * w i ^ 2)
+      (fun i => ω i * (v i * w i)) (fun i => by have := hω i; positivity)
+      (fun i => by have := hω i; positivity)
+      (fun i => by have := hω i; have := hv i; have := hw i; positivity)
+      (fun i => le_of_eq (by ring))
+    have hE := PSD2.sum Finset.univ _ _ _ (fun i _ => psd2_extra (t := 1) (hω i) (hv i) (hw i)
+      (Real.one_le_rpow (hall i) (by linarith)))
+    have hT := hS.add hE
+    rw [sqrt_rpow_eq (Finset.sum_nonneg (fun i _ => by have := hω i; positivity)),
+      sqrt_rpow_eq (Finset.sum_nonneg (fun i _ => by have := hω i; positivity))]
+    apply final_step (Finset.sum_nonneg (fun i _ => by have := hω i; positivity))
+      (Finset.sum_nonneg (fun i _ => by have := hω i; positivity))
+    convert hT using 1 <;> simp only [Finset.sum_sub_distrib, one_mul] <;> ring
+  · -- exactly one weight is below one
+    push Not at hall
+    obtain ⟨k, hk⟩ := hall
+    have hωk := hω k
+    have hrest : ∀ j, j ≠ k → 1 / ω k ≤ ω j := fun j hj => by
+      rw [div_le_iff₀ hωk]; linarith [hpair j k hj]
+    set t := (1 / ω k) ^ (p - 1) with ht
+    have ht1 : 1 ≤ t := Real.one_le_rpow (by rw [le_div_iff₀ hωk]; linarith) (by linarith)
+    have ht0 : 0 < t := by linarith
+    set s := Finset.univ.erase k with hs
+    -- split every sum into the index `k` and the rest
+    have split : ∀ f : Fin n → ℝ, ∑ i, f i = f k + ∑ i ∈ s, f i := fun f =>
+      (Finset.add_sum_erase _ _ (Finset.mem_univ k)).symm
+    set a := √(ω k) * v k with ha
+    set c := √(ω k) * w k with hc
+    have hsq : √(ω k) ^ 2 = ω k := Real.sq_sqrt hωk.le
+    set b2 := ∑ i ∈ s, ω i * v i ^ 2 with hb2
+    set d2 := ∑ i ∈ s, ω i * w i ^ 2 with hd2
+    set e := ∑ i ∈ s, ω i * (v i * w i) with he
+    have hb20 : 0 ≤ b2 := Finset.sum_nonneg (fun i _ => by have := hω i; positivity)
+    have hd20 : 0 ≤ d2 := Finset.sum_nonneg (fun i _ => by have := hω i; positivity)
+    have he0 : 0 ≤ e := Finset.sum_nonneg (fun i _ => by
+      have := hω i; have := hv i; have := hw i; positivity)
+    have hCS : e ^ 2 ≤ b2 * d2 :=
+      Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul s (fun i _ => by have := hω i; positivity)
+        (fun i _ => by have := hω i; positivity) (fun i _ => by
+          have := hω i; rw [mul_pow, mul_pow]; nlinarith [sq_nonneg (ω i)])
+    set b := √b2 with hb
+    set d := √d2 with hd
+    have hb0 : 0 ≤ b := Real.sqrt_nonneg _
+    have hd0 : 0 ≤ d := Real.sqrt_nonneg _
+    have hbb : b ^ 2 = b2 := Real.sq_sqrt hb20
+    have hdd : d ^ 2 = d2 := Real.sq_sqrt hd20
+    have heBD : e ≤ b * d := by
+      rw [← Real.sqrt_sq he0, hb, hd, ← Real.sqrt_mul hb20]
+      exact Real.sqrt_le_sqrt hCS
+    have ha0 : 0 ≤ a := by have := hv k; positivity
+    have hc0 : 0 ≤ c := by have := hw k; positivity
+    -- the right-hand side
+    have hR1 : ∑ i, ω i * v i ^ 2 = a ^ 2 + b ^ 2 := by
+      rw [split, hbb, ha, mul_pow, hsq]
+    have hR2 : ∑ i, ω i * w i ^ 2 = c ^ 2 + d ^ 2 := by
+      rw [split, hdd, hc, mul_pow, hsq]
+    have hR3 : ∑ i, ω i * (v i * w i) = a * c + e := by
+      rw [split, ha, hc]
+      have : √(ω k) * v k * (√(ω k) * w k) = √(ω k) ^ 2 * (v k * w k) := by ring
+      rw [this, hsq]
+    rw [hR1, hR2, hR3, sqrt_rpow_mul (by positivity) (by positivity)]
+    -- the rank-one part, written with `α = a^p`, `γ = c^p`
+    set α := a ^ p with hα
+    set γ := c ^ p with hγ
+    have hα0 : 0 ≤ α := by positivity
+    have hγ0 : 0 ≤ γ := by positivity
+    have hkey : ∀ x : ℝ, 0 ≤ x → ω k * (x ^ p) ^ 2 = t * (√(ω k) * x) ^ p * (√(ω k) * x) ^ p := by
+      intro x hx
+      rw [ht, Real.mul_rpow (Real.sqrt_nonneg _) hx]
+      have hs : √(ω k) ^ p * √(ω k) ^ p = ω k ^ p := by
+        rw [← Real.mul_rpow (Real.sqrt_nonneg _) (Real.sqrt_nonneg _),
+          Real.mul_self_sqrt hωk.le]
+      have h1 : (1 / ω k) ^ (p - 1) * ω k ^ p = ω k := by
+        rw [Real.div_rpow zero_le_one hωk.le, Real.one_rpow, Real.rpow_sub_one hωk.ne']
+        field_simp
+      calc ω k * (x ^ p) ^ 2 = ((1 / ω k) ^ (p - 1) * ω k ^ p) * (x ^ p) ^ 2 := by rw [h1]
+        _ = (1 / ω k) ^ (p - 1) * (√(ω k) ^ p * √(ω k) ^ p) * (x ^ p) ^ 2 := by rw [hs]
+        _ = _ := by ring
+    have hkv := hkey (v k) (hv k)
+    have hkw := hkey (w k) (hw k)
+    have hkvw : ω k * (v k ^ p * w k ^ p) = t * (α * γ) := by
+      rw [hα, hγ, ha, hc, Real.mul_rpow (Real.sqrt_nonneg _) (hv k),
+        Real.mul_rpow (Real.sqrt_nonneg _) (hw k)]
+      have hs : √(ω k) ^ p * √(ω k) ^ p = ω k ^ p := by
+        rw [← Real.mul_rpow (Real.sqrt_nonneg _) (Real.sqrt_nonneg _),
+          Real.mul_self_sqrt hωk.le]
+      have h1 : (1 / ω k) ^ (p - 1) * ω k ^ p = ω k := by
+        rw [Real.div_rpow zero_le_one hωk.le, Real.one_rpow, Real.rpow_sub_one hωk.ne']
+        field_simp
+      calc ω k * (v k ^ p * w k ^ p) = ((1 / ω k) ^ (p - 1) * ω k ^ p) * (v k ^ p * w k ^ p) := by
+            rw [h1]
+        _ = (1 / ω k) ^ (p - 1) * (√(ω k) ^ p * √(ω k) ^ p) * (v k ^ p * w k ^ p) := by rw [hs]
+        _ = _ := by ring
+    -- the rest is dominated by `R^{∘p} / t`
+    have hS := sum_psd hp s (fun i => ω i * v i ^ 2) (fun i => ω i * w i ^ 2)
+      (fun i => ω i * (v i * w i)) (fun i => by have := hω i; positivity)
+      (fun i => by have := hω i; positivity)
+      (fun i => by have := hω i; have := hv i; have := hw i; positivity)
+      (fun i => le_of_eq (by ring))
+    have hE := PSD2.sum s _ _ _ (fun i hi => psd2_extra (t := t) (hω i) (hv i) (hw i) (by
+      rw [ht]
+      exact Real.rpow_le_rpow (by positivity) (hrest i (Finset.ne_of_mem_erase hi))
+        (by linarith)))
+    have hT := (hS.add hE).smul (show 0 ≤ 1 / t by positivity)
+    rw [← hb2, ← hd2, ← he] at hT
+    set B := b ^ p with hB
+    set D := d ^ p with hD
+    have hB0 : 0 ≤ B := by positivity
+    have hD0 : 0 ≤ D := by positivity
+    have hBB : B ^ 2 = b2 ^ p := by
+      rw [hB, ← hbb, sq, sq, Real.mul_rpow hb0 hb0]
+    have hDD : D ^ 2 = d2 ^ p := by
+      rw [hD, ← hdd, sq, sq, Real.mul_rpow hd0 hd0]
+    -- compare the left-hand side with the defect of `t·(rank one) + R^{∘p}/t`
+    have hmono : √(∑ i, ω i * (v i ^ p) ^ 2) * √(∑ i, ω i * (w i ^ p) ^ 2)
+          - ∑ i, ω i * (v i ^ p * w i ^ p)
+        ≤ √(t * α ^ 2 + B ^ 2 / t) * √(t * γ ^ 2 + D ^ 2 / t) - (t * (α * γ) + e ^ p / t) := by
+      apply final_step (Finset.sum_nonneg (fun i _ => by have := hω i; positivity))
+        (Finset.sum_nonneg (fun i _ => by have := hω i; positivity))
+      rw [split, split, split (fun i => ω i * (v i ^ p * w i ^ p)), hkv, hkw, hkvw, hBB, hDD]
+      convert hT using 1
+      · simp only [Finset.sum_sub_distrib, ← Finset.mul_sum]; field_simp; ring
+      · simp only [Finset.sum_sub_distrib, ← Finset.mul_sum]; field_simp; ring
+      · simp only [Finset.sum_sub_distrib, ← Finset.mul_sum]; field_simp; ring
+    have heBDp : e ^ p ≤ B * D := by
+      rw [hB, hD, ← Real.mul_rpow hb0 hd0]
+      exact Real.rpow_le_rpow he0 heBD (by linarith)
+    have hsup := sup_bound ht1 hα0 hγ0 hB0 hD0 heBDp
+    have h2 := two_dim hp ha0 hb0 hc0 hd0
+    have hm := merge hp1 (mul_nonneg ha0 hc0) he0 heBD
+    have hαD : α * D = (a * d) ^ p := by rw [hα, hD, Real.mul_rpow ha0 hd0]
+    have hγB : γ * B = (b * c) ^ p := by rw [hγ, hB, Real.mul_rpow hb0 hc0]; ring
+    have hBD : B * D = (b * d) ^ p := by rw [hB, hD, Real.mul_rpow hb0 hd0]
+    rw [hαD, hγB, hBD] at hsup
+    linarith
+
+/-- **Necessity.** If two different weights have product below one, the weighted inequality fails
+for every `p > 1` at a pair of standard basis vectors. -/
+theorem not_weighted_of_lt {n : ℕ} (ω : Fin n → ℝ) (hω : ∀ i, 0 < ω i) {i j : Fin n}
+    (hij : i ≠ j) (hlt : ω i * ω j < 1) {p : ℝ} (hp : 1 < p) :
+    wRHS ω p (Pi.single i 1) (Pi.single j 1) < wLHS ω p (Pi.single i 1) (Pi.single j 1) := by
+  classical
+  have hp0 : p ≠ 0 := by linarith
+  unfold wLHS wRHS
+  have hzero : (0:ℝ) ^ p = 0 := Real.zero_rpow hp0
+  simp only [Pi.single_apply]
+  simp [hij.symm, hzero]
+  have hi := hω i
+  have hj := hω j
+  rw [← Real.mul_rpow (Real.sqrt_nonneg _) (Real.sqrt_nonneg _), ← Real.sqrt_mul hi.le]
+  have h0 : 0 < √(ω i * ω j) := Real.sqrt_pos.2 (by positivity)
+  have h1 : √(ω i * ω j) < 1 := by
+    rw [Real.sqrt_lt' one_pos]; simpa using hlt
+  calc √(ω i * ω j) ^ p < √(ω i * ω j) ^ (1:ℝ) :=
+        Real.rpow_lt_rpow_of_exponent_gt h0 h1 hp
+    _ = √(ω i * ω j) := Real.rpow_one _
+
+/-- **The weighted inequality, characterised.** For positive weights and every real `p ≥ 2`, the
+weighted inequality holds for all entrywise nonnegative `v, w` if and only if `ω i * ω j ≥ 1`
+for all `i ≠ j`. The condition does not depend on `p`. -/
+theorem weighted_iff {n : ℕ} (ω : Fin n → ℝ) (hω : ∀ i, 0 < ω i) (p : ℝ) (hp : 2 ≤ p) :
+    (∀ v w : Fin n → ℝ, (∀ i, 0 ≤ v i) → (∀ i, 0 ≤ w i) → wLHS ω p v w ≤ wRHS ω p v w) ↔
+      ∀ i j, i ≠ j → 1 ≤ ω i * ω j := by
+  constructor
+  · intro h i j hij
+    by_contra hlt
+    push Not at hlt
+    have := not_weighted_of_lt ω hω hij hlt (by linarith : 1 < p)
+    have h' := h (Pi.single i 1) (Pi.single j 1)
+      (fun k => by by_cases hk : k = i <;> simp [hk])
+      (fun k => by by_cases hk : k = j <;> simp [hk])
+    linarith
+  · intro hpair v w hv hw
+    exact weighted_of_pairwise ω hω hpair p hp v w hv hw
+
 end RealPowerCauchySchwarz
