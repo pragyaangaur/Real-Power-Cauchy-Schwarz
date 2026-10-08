@@ -310,4 +310,68 @@ lemma pair_of_eq {n : ℕ} {p : ℝ} (hp : 2 ≤ p) {v w : Fin n → ℝ} (hv : 
   obtain ⟨h1, h2⟩ := form_zero hX hu0 hu'0 hformX
   exact ⟨h1, by rw [← hue, ← hue']; exact h2⟩
 
+/-! ## Sufficiency: the equality families -/
+
+lemma zero_rpow_of_pos {p : ℝ} (hp : 0 < p) : (0:ℝ) ^ p = 0 := Real.zero_rpow hp.ne'
+
+/-- Linearly dependent vectors give equality, for every `p > 0`. -/
+theorem eq_of_minors {n : ℕ} {p : ℝ} (hp : 0 < p) (v w : Fin n → ℝ) (hv : ∀ i, 0 ≤ v i)
+    (hw : ∀ i, 0 ≤ w i) (hmin : ∀ i j, v i * w j = v j * w i) : lhs p v w = rhs p v w := by
+  unfold lhs rhs
+  by_cases hz : ∀ i, v i = 0
+  · simp [hz, zero_rpow_of_pos hp]
+  push Not at hz
+  obtain ⟨i0, hi0⟩ := hz
+  have hpos : 0 < v i0 := lt_of_le_of_ne (hv i0) (Ne.symm hi0)
+  set l := w i0 / v i0 with hl
+  have hl0 : 0 ≤ l := div_nonneg (hw i0) (hv i0)
+  have hwl : ∀ k, w k = l * v k := fun k => by
+    rw [hl]; field_simp; linarith [hmin i0 k]
+  simp only [hwl]
+  have hpow : ∀ k, (l * v k) ^ p = l ^ p * v k ^ p := fun k => Real.mul_rpow hl0 (hv k)
+  simp only [hpow]
+  have hlp : 0 ≤ l ^ p := Real.rpow_nonneg hl0 _
+  have hA : 0 ≤ ∑ k, (v k ^ p) ^ 2 := Finset.sum_nonneg (fun k _ => sq_nonneg _)
+  have hV : 0 ≤ ∑ k, v k ^ 2 := Finset.sum_nonneg (fun k _ => sq_nonneg _)
+  have s1 : ∑ k, (l ^ p * v k ^ p) ^ 2 = (l ^ p) ^ 2 * ∑ k, (v k ^ p) ^ 2 := by
+    rw [Finset.mul_sum]; congr 1; ext k; ring
+  have s2 : ∑ k, v k ^ p * (l ^ p * v k ^ p) = l ^ p * ∑ k, (v k ^ p) ^ 2 := by
+    rw [Finset.mul_sum]; congr 1; ext k; ring
+  have s3 : ∑ k, (l * v k) ^ 2 = l ^ 2 * ∑ k, v k ^ 2 := by
+    rw [Finset.mul_sum]; congr 1; ext k; ring
+  have s4 : ∑ k, v k * (l * v k) = l * ∑ k, v k ^ 2 := by
+    rw [Finset.mul_sum]; congr 1; ext k; ring
+  rw [s1, s2, s3, s4, Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq hlp, Real.sqrt_mul (sq_nonneg _),
+    Real.sqrt_sq hl0, Real.mul_rpow hl0 (Real.sqrt_nonneg _), Real.mul_rpow hl0 hV]
+  have hsq : √(∑ k, (v k ^ p) ^ 2) * √(∑ k, (v k ^ p) ^ 2) = ∑ k, (v k ^ p) ^ 2 :=
+    Real.mul_self_sqrt hA
+  have hsq2 : (√(∑ k, v k ^ 2)) ^ p * (√(∑ k, v k ^ 2)) ^ p = (∑ k, v k ^ 2) ^ p := by
+    rw [← Real.mul_rpow (Real.sqrt_nonneg _) (Real.sqrt_nonneg _), Real.mul_self_sqrt hV]
+  linear_combination (l ^ p) * hsq - (l ^ p) * hsq2
+
+/-- Two vectors each supported on a single, different index give equality. -/
+theorem eq_of_single {n : ℕ} {p : ℝ} (hp : 0 < p) (v w : Fin n → ℝ) (hv : ∀ i, 0 ≤ v i)
+    (hw : ∀ i, 0 ≤ w i) {i j : Fin n} (hij : i ≠ j) (hvi : ∀ k, k ≠ i → v k = 0)
+    (hwj : ∀ k, k ≠ j → w k = 0) : lhs p v w = rhs p v w := by
+  unfold lhs rhs
+  have h0 := zero_rpow_of_pos hp
+  have s1 : ∑ k, (v k ^ p) ^ 2 = (v i ^ p) ^ 2 :=
+    Fintype.sum_eq_single i (fun k hk => by rw [hvi k hk, h0]; ring)
+  have s2 : ∑ k, (w k ^ p) ^ 2 = (w j ^ p) ^ 2 :=
+    Fintype.sum_eq_single j (fun k hk => by rw [hwj k hk, h0]; ring)
+  have s3 : ∑ k, v k ^ p * w k ^ p = 0 := Finset.sum_eq_zero (fun k _ => by
+    by_cases hk : k = i
+    · subst hk; rw [hwj k hij, h0]; ring
+    · rw [hvi k hk, h0]; ring)
+  have s4 : ∑ k, v k ^ 2 = v i ^ 2 :=
+    Fintype.sum_eq_single i (fun k hk => by rw [hvi k hk]; ring)
+  have s5 : ∑ k, w k ^ 2 = w j ^ 2 :=
+    Fintype.sum_eq_single j (fun k hk => by rw [hwj k hk]; ring)
+  have s6 : ∑ k, v k * w k = 0 := Finset.sum_eq_zero (fun k _ => by
+    by_cases hk : k = i
+    · subst hk; rw [hwj k hij]; ring
+    · rw [hvi k hk]; ring)
+  rw [s1, s2, s3, s4, s5, s6, h0, Real.sqrt_sq (Real.rpow_nonneg (hv i) _),
+    Real.sqrt_sq (Real.rpow_nonneg (hw j) _), Real.sqrt_sq (hv i), Real.sqrt_sq (hw j)]
+
 end RealPowerCauchySchwarz
