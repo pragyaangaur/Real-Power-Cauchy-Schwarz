@@ -323,4 +323,71 @@ lemma sum_psd {ι : Type*} {p : ℝ} (hp : 2 ≤ p) (s : Finset ι) (x y z : ι 
     rw [e, e, e]
     exact hG.add ih
 
+/-- The final scalar step: the positive semidefinite defect matrix and the scalar
+Cauchy-Schwarz inequality `√(ab) + √((1-a)(1-b)) ≤ 1` (in homogeneous form). -/
+lemma final_step {P Q a b d Zp : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b)
+    (h : PSD2 (P - a) (Q - b) (Zp - d)) : √a * √b - d ≤ √P * √Q - Zp := by
+  obtain ⟨h1, h2, h3⟩ := h
+  have hP : 0 ≤ P := by linarith
+  have hQ : 0 ≤ Q := by linarith
+  obtain ⟨u, hu, rfl⟩ : ∃ u, 0 ≤ u ∧ P = u ^ 2 := ⟨√P, Real.sqrt_nonneg _, (Real.sq_sqrt hP).symm⟩
+  obtain ⟨u', hu', rfl⟩ : ∃ u', 0 ≤ u' ∧ Q = u' ^ 2 :=
+    ⟨√Q, Real.sqrt_nonneg _, (Real.sq_sqrt hQ).symm⟩
+  obtain ⟨e, he, rfl⟩ : ∃ e, 0 ≤ e ∧ a = e ^ 2 := ⟨√a, Real.sqrt_nonneg _, (Real.sq_sqrt ha).symm⟩
+  obtain ⟨e', he', rfl⟩ : ∃ e', 0 ≤ e' ∧ b = e' ^ 2 :=
+    ⟨√b, Real.sqrt_nonneg _, (Real.sq_sqrt hb).symm⟩
+  rw [Real.sqrt_sq hu, Real.sqrt_sq hu', Real.sqrt_sq he, Real.sqrt_sq he']
+  have hue : e ≤ u := by nlinarith
+  have hue' : e' ≤ u' := by nlinarith
+  have hS : 0 ≤ u * u' - e * e' := by nlinarith [mul_le_mul hue hue' he' hu]
+  have hsq : (Zp - d) ^ 2 ≤ (u * u' - e * e') ^ 2 := by
+    nlinarith [sq_nonneg (u * e' - e * u')]
+  by_contra hlt
+  push Not at hlt
+  have : u * u' - e * e' < Zp - d := by linarith
+  have hT := mul_self_lt_mul_self hS this
+  nlinarith
+
+lemma sqrt_rpow_eq {X p : ℝ} (hX : 0 ≤ X) : (√X) ^ p = √(X ^ p) := by
+  rw [Real.sqrt_eq_rpow, Real.sqrt_eq_rpow, ← Real.rpow_mul hX, ← Real.rpow_mul hX, mul_comm]
+
+/-- **Theorem 1, sum form.** For real `p ≥ 2` and nonnegative real vectors `v, w` of any
+length `n`,
+`‖v^p‖ ‖w^p‖ - ⟨v^p, w^p⟩ ≤ ‖v‖^p ‖w‖^p - ⟨v, w⟩^p`,
+with every norm and inner product written out as a finite sum. -/
+theorem main_sum (n : ℕ) (p : ℝ) (hp : 2 ≤ p) (v w : Fin n → ℝ)
+    (hv : ∀ i, 0 ≤ v i) (hw : ∀ i, 0 ≤ w i) :
+    √(∑ i, (v i ^ p) ^ 2) * √(∑ i, (w i ^ p) ^ 2) - ∑ i, v i ^ p * w i ^ p
+      ≤ (√(∑ i, v i ^ 2)) ^ p * (√(∑ i, w i ^ 2)) ^ p - (∑ i, v i * w i) ^ p := by
+  have hS := sum_psd hp Finset.univ (fun i => v i ^ 2) (fun i => w i ^ 2) (fun i => v i * w i)
+    (fun i => sq_nonneg _) (fun i => sq_nonneg _) (fun i => mul_nonneg (hv i) (hw i))
+    (fun i => by rw [mul_pow])
+  have e1 : ∀ i, (v i ^ p) ^ 2 = (v i ^ 2) ^ p := fun i => by
+    rw [sq, sq, Real.mul_rpow (hv i) (hv i)]
+  have e2 : ∀ i, (w i ^ p) ^ 2 = (w i ^ 2) ^ p := fun i => by
+    rw [sq, sq, Real.mul_rpow (hw i) (hw i)]
+  have e3 : ∀ i, v i ^ p * w i ^ p = (v i * w i) ^ p := fun i => (Real.mul_rpow (hv i) (hw i)).symm
+  simp only [e1, e2, e3]
+  rw [sqrt_rpow_eq (Finset.sum_nonneg (fun i _ => sq_nonneg (v i))),
+    sqrt_rpow_eq (Finset.sum_nonneg (fun i _ => sq_nonneg (w i)))]
+  exact final_step (Finset.sum_nonneg (fun i _ => Real.rpow_nonneg (sq_nonneg _) _))
+    (Finset.sum_nonneg (fun i _ => Real.rpow_nonneg (sq_nonneg _) _)) hS
+
+/-- Entrywise real power of a vector in `ℝⁿ` with the Euclidean structure. -/
+noncomputable def epow {n : ℕ} (p : ℝ) (v : EuclideanSpace ℝ (Fin n)) : EuclideanSpace ℝ (Fin n) :=
+  WithLp.toLp 2 (fun i => v i ^ p)
+
+/-- **Theorem 1 (Principia Math writeup), resolving Conjecture 5.1 of Johnston, Plosker,
+Torrance and Varona.** For every `n`, every real `p ≥ 2` and all entrywise nonnegative
+`v, w ∈ ℝⁿ` (Euclidean norm and inner product),
+`‖v^p‖ ‖w^p‖ - ⟨v^p, w^p⟩ ≤ ‖v‖^p ‖w‖^p - ⟨v, w⟩^p`. -/
+theorem generalized_cauchy_schwarz (n : ℕ) (p : ℝ) (hp : 2 ≤ p)
+    (v w : EuclideanSpace ℝ (Fin n)) (hv : ∀ i, 0 ≤ v i) (hw : ∀ i, 0 ≤ w i) :
+    ‖epow p v‖ * ‖epow p w‖ - inner ℝ (epow p v) (epow p w)
+      ≤ ‖v‖ ^ p * ‖w‖ ^ p - (inner ℝ v w) ^ p := by
+  have h := main_sum n p hp (fun i => v i) (fun i => w i) hv hw
+  simp only [EuclideanSpace.norm_eq, PiLp.inner_apply, epow, Real.norm_eq_abs, sq_abs,
+    RCLike.inner_apply, conj_trivial]
+  convert h using 3 <;> simp [mul_comm]
+
 end RealPowerCauchySchwarz
