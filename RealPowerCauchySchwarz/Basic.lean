@@ -200,4 +200,49 @@ lemma G_eq {p a b : ℝ} (hp : 2 ≤ p) (ha : 0 < a) (hb : 0 < b) :
   unfold D
   field_simp
 
+/-- The key two-by-two estimate: the defect at geometric means is at most the geometric
+mean of the defects. -/
+lemma G_le_sqrt {p x1 x2 y1 y2 z1 z2 : ℝ} (hp : 2 ≤ p)
+    (hx1 : 0 < x1) (hx2 : 0 < x2) (hy1 : 0 < y1) (hy2 : 0 < y2) (hz1' : 0 < z1) (hz2' : 0 < z2)
+    (hz1 : z1 ^ 2 ≤ x1 * y1) (hz2 : z2 ^ 2 ≤ x2 * y2) :
+    G p z1 z2 ≤ √(G p x1 x2) * √(G p y1 y2) := by
+  have hDint : ∀ a b : ℝ, IntervalIntegrable (fun t => D p a b t / a) volume 0 1 :=
+    fun a b => ((D_continuous hp).div_const a).intervalIntegrable _ _
+  have hDnn : ∀ a b : ℝ, 0 < a → 0 ≤ b → ∀ t ∈ Icc (0:ℝ) 1, 0 ≤ D p a b t / a :=
+    fun a b ha hb t ht => div_nonneg (D_nonneg hp ha.le hb ht.1) ha.le
+  have hcs := integral_le_sqrt_mul (hDint x1 x2) (hDint y1 y2) (hDint z1 z2)
+    (hDnn x1 x2 hx1 hx2.le) (hDnn y1 y2 hy1 hy2.le)
+    (fun t ht => D_sq_le hp ht hx1 hx2 hy1 hy2 hz1' hz2' hz1 hz2)
+  set Jz := ∫ t in (0:ℝ)..1, D p z1 z2 t / z1
+  set Jx := ∫ t in (0:ℝ)..1, D p x1 x2 t / x1
+  set Jy := ∫ t in (0:ℝ)..1, D p y1 y2 t / y1
+  have hJx : 0 ≤ Jx := intervalIntegral.integral_nonneg (by norm_num) (hDnn x1 x2 hx1 hx2.le)
+  have hJy : 0 ≤ Jy := intervalIntegral.integral_nonneg (by norm_num) (hDnn y1 y2 hy1 hy2.le)
+  have hp0 : 0 < p := by linarith
+  rw [G_eq hp hz1' hz2', G_eq hp hx1 hx2, G_eq hp hy1 hy2]
+  rw [Real.sqrt_mul (x := p * x1 * x2) (by positivity),
+    Real.sqrt_mul (x := p * y1 * y2) (by positivity)]
+  have hc : p * z1 * z2 ≤ √(p * x1 * x2) * √(p * y1 * y2) := by
+    rw [← Real.sqrt_mul (by positivity)]
+    apply Real.le_sqrt_of_sq_le
+    have : (z1 * z2) ^ 2 ≤ (x1 * y1) * (x2 * y2) := by
+      rw [mul_pow]; exact mul_le_mul hz1 hz2 (sq_nonneg _) (by positivity)
+    nlinarith [mul_le_mul_of_nonneg_left this (sq_nonneg p)]
+  calc p * z1 * z2 * Jz ≤ p * z1 * z2 * (√Jx * √Jy) :=
+        mul_le_mul_of_nonneg_left hcs (by positivity)
+    _ ≤ √(p * x1 * x2) * √(p * y1 * y2) * (√Jx * √Jy) :=
+        mul_le_mul_of_nonneg_right hc (by positivity)
+    _ = √(p * x1 * x2) * √Jx * (√(p * y1 * y2) * √Jy) := by ring
+
+lemma G_nonneg {p a b : ℝ} (hp : 1 ≤ p) (ha : 0 ≤ a) (hb : 0 ≤ b) : 0 ≤ G p a b := by
+  unfold G
+  have := Real.add_rpow_le_rpow_add ha hb hp
+  linarith
+
+lemma G_zero_left {p b : ℝ} (hp : 0 < p) : G p 0 b = 0 := by
+  unfold G; simp [Real.zero_rpow hp.ne']
+
+lemma G_zero_right {p a : ℝ} (hp : 0 < p) : G p a 0 = 0 := by
+  unfold G; simp [Real.zero_rpow hp.ne']
+
 end RealPowerCauchySchwarz
