@@ -81,8 +81,6 @@ An illustrated explanation of the proof, with interactive plots, is published at
 
 The applications report *What a Cauchy-Schwarz inequality for real powers is good for* is [`docs/applications.pdf`](docs/applications.pdf). It derives consequences for tempered and escort distributions, partition functions, sharpening in semi-supervised learning and kernels on nonnegative features, and it labels each claim as proved, cited or proposed. The folder `companion/applications/` holds its LaTeX source and the script `consequences.py`, which tests every corollary in the report on random inputs and draws its figures.
 
-The folder `companion/video/` holds the Manim source of the exposition video, the script that assembles it, its subtitles and a narration script.
-
 ## Credits
 
 The conjecture is due to Johnston, Plosker, Torrance and Varona. The informal proof of the inequality first appeared on [Principia Math](https://principia-math.com) as the solution to problem MathDB 369283, and the 2 × 2 superadditivity it uses is a case of a result of D. Guillot, A. Khare and B. Rajaratnam. Pragyaan Gaur wrote the formal proofs, the equality cases and the weighted characterisation.
