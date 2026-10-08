@@ -390,4 +390,18 @@ theorem generalized_cauchy_schwarz (n : ℕ) (p : ℝ) (hp : 2 ≤ p)
     RCLike.inner_apply, conj_trivial]
   convert h using 3 <;> simp [mul_comm]
 
+/-- Conjecture 5.1 of Johnston, Plosker, Torrance and Varona, as rendered in the Principia
+Math writeup: for every `n ≥ 1`, every real `p ≥ 2` and all entrywise strictly positive
+`v, w ∈ ℝⁿ`, `‖v^p‖ ‖w^p‖ - ⟨v^p, w^p⟩ ≤ ‖v‖^p ‖w‖^p - ⟨v, w⟩^p`. -/
+def Conjecture_5_1 : Prop :=
+  ∀ n : ℕ, 1 ≤ n → ∀ p : ℝ, 2 ≤ p → ∀ v w : EuclideanSpace ℝ (Fin n),
+    (∀ i, 0 < v i) → (∀ i, 0 < w i) →
+      ‖epow p v‖ * ‖epow p w‖ - inner ℝ (epow p v) (epow p w)
+        ≤ ‖v‖ ^ p * ‖w‖ ^ p - (inner ℝ v w) ^ p
+
+/-- Conjecture 5.1 holds. -/
+theorem conjecture_5_1_true : Conjecture_5_1 :=
+  fun n _ p hp v w hv hw =>
+    generalized_cauchy_schwarz n p hp v w (fun i => (hv i).le) (fun i => (hw i).le)
+
 end RealPowerCauchySchwarz
