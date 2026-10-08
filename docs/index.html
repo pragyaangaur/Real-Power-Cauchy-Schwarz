@@ -264,7 +264,7 @@ const LINKS = {
 (function addLinks() {
   const box = document.getElementById("links");
   const names = { paper: "Paper", video: "Video", applications: "Applications report", principia: "Principia project" };
-  for (const [k, url] of Object.entries(LINKS)) {
+  for (const [k, url] of Object.entries(LINKS).reverse()) {
     if (!url) continue;
     const a = document.createElement("a");
     a.href = url; a.textContent = names[k];
