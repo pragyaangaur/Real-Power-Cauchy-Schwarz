@@ -79,6 +79,8 @@ pre {
 .grid3 span.diag { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 15%, transparent); }
 nav.toc { font-size: 15px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
 nav.toc a { white-space: nowrap; }
+.video { position: relative; width: 100%; aspect-ratio: 16 / 9; margin: 16px 0 8px; border-radius: 10px; overflow: hidden; border: 1px solid var(--faint); background: #000; }
+.video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .links a { display: inline-block; margin: 4px 14px 4px 0; }
 footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--faint); margin-top: 56px; padding-top: 16px; }
 </style>
@@ -91,6 +93,8 @@ footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--faint
   <h1>Cauchy–Schwarz for real powers</h1>
   <p class="lede">In 2025 four mathematicians conjectured that a strengthened Cauchy–Schwarz inequality holds for every real power from 2 upwards. This page explains why it is true, with pictures you can play with. The full proof is in the paper, and every step of it is checked by the Lean proof assistant.</p>
   <p class="sans" style="font-size:15px;color:var(--muted)">Pragyaan Gaur</p>
+  <div class="video"><iframe src="https://www.youtube-nocookie.com/embed/OIpJ6RpFTUA" title="Cauchy–Schwarz for real powers (video)" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+  <p class="sans" style="font-size:15px;color:var(--muted)">A 7 minute narrated video covers the same ground. The <a href="https://doi.org/10.5281/zenodo.23237507">paper</a> has the full proofs.</p>
   <nav class="toc"><a href="#gap">The gap</a><a href="#powers">Powers</a><a href="#history">History</a><a href="#tensor">Whole numbers</a><a href="#matrices">The idea</a><a href="#cone">The cone</a><a href="#more">More results</a><a href="#cooling">Uses</a><a href="#lean">Lean</a></nav>
 </header>
 
@@ -252,10 +256,10 @@ theorem conjecture_5_1_true : Conjecture_5_1</code></pre>
 <script>
 // Links that exist only after publication. Fill these in and the page shows them.
 const LINKS = {
-  paper: "",          // Zenodo record of the paper
-  video: "",          // YouTube video
-  applications: "",   // applications report
-  principia: "",      // Principia project page
+  paper: "https://doi.org/10.5281/zenodo.23237507",
+  video: "https://youtu.be/OIpJ6RpFTUA",
+  applications: "applications.pdf",
+  principia: "https://principia-math.com/projects/54678ef88a0b3d18c0f9081de5f7f28e",
 };
 (function addLinks() {
   const box = document.getElementById("links");

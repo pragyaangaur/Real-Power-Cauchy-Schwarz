@@ -1,5 +1,7 @@
 # Real-Power-Cauchy-Schwarz: a Lean proof of a Cauchy-Schwarz inequality for real powers
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23237507.svg)](https://doi.org/10.5281/zenodo.23237507)
+
 This repository contains a Lean 4 proof, built on Mathlib, of Conjecture 5.1 in the paper *Generalizing the Cauchy-Schwarz inequality: Hadamard powers and tensor products* by N. Johnston, S. Plosker, C. Torrance and L. M. B. Varona ([arXiv:2507.10327](https://arxiv.org/abs/2507.10327), Linear and Multilinear Algebra, 2026, [doi:10.1080/03081087.2026.2707240](https://doi.org/10.1080/03081087.2026.2707240)). For a vector v with nonnegative entries, write v^p for the vector of p-th powers of its entries. The conjecture states the following.
 
 > Let p ≥ 2 be a real number. For any pair of vectors v, w with positive entries, ‖v^p‖ ‖w^p‖ − ⟨v^p, w^p⟩ ≤ ‖v‖^p ‖w‖^p − ⟨v, w⟩^p.
@@ -75,7 +77,9 @@ The script `scripts/numerics.py` tests the inequality on random vectors, checks 
 python3 scripts/numerics.py
 ```
 
-## Exposition and applications
+## Paper, exposition and applications
+
+The paper *A Cauchy-Schwarz inequality for real powers: proof, equality cases and weighted forms* is on Zenodo at [doi:10.5281/zenodo.23237507](https://doi.org/10.5281/zenodo.23237507). It has the full proofs, the case of more than two vectors and the open questions. A 7 minute narrated video explains the proof on [YouTube](https://youtu.be/OIpJ6RpFTUA).
 
 An illustrated explanation of the proof, with interactive plots, is published at [pragyaangaur.github.io/Real-Power-Cauchy-Schwarz](https://pragyaangaur.github.io/Real-Power-Cauchy-Schwarz/). Its source is `docs/index.html`, and it needs no build step.
 
