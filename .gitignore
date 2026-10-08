@@ -1,2 +1,5 @@
 .lake
 .check_*
+companion/video/media
+companion/video/captions
+__pycache__
