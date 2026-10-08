@@ -245,4 +245,82 @@ lemma G_zero_left {p b : ℝ} (hp : 0 < p) : G p 0 b = 0 := by
 lemma G_zero_right {p a : ℝ} (hp : 0 < p) : G p a 0 = 0 := by
   unfold G; simp [Real.zero_rpow hp.ne']
 
+/-- A real symmetric `2 × 2` matrix `[[α, γ], [γ, β]]` is positive semidefinite exactly when
+`0 ≤ α`, `0 ≤ β` and `γ ^ 2 ≤ α β`. We use this elementary description. -/
+def PSD2 (α β γ : ℝ) : Prop := 0 ≤ α ∧ 0 ≤ β ∧ γ ^ 2 ≤ α * β
+
+lemma PSD2.add {α β γ α' β' γ' : ℝ} (h : PSD2 α β γ) (h' : PSD2 α' β' γ') :
+    PSD2 (α + α') (β + β') (γ + γ') := by
+  obtain ⟨ha, hb, hc⟩ := h
+  obtain ⟨ha', hb', hc'⟩ := h'
+  refine ⟨by linarith, by linarith, ?_⟩
+  have hprod : (γ * γ') ^ 2 ≤ (α * β') * (α' * β) := by
+    rw [mul_pow]
+    calc γ ^ 2 * γ' ^ 2 ≤ (α * β) * (α' * β') :=
+          mul_le_mul hc hc' (sq_nonneg _) (by positivity)
+      _ = (α * β') * (α' * β) := by ring
+  have hcross : 2 * (γ * γ') ≤ α * β' + α' * β := by
+    by_contra hlt
+    push Not at hlt
+    have hS : 0 ≤ α * β' + α' * β := by positivity
+    have hT := mul_self_lt_mul_self hS hlt
+    nlinarith [sq_nonneg (α * β' - α' * β)]
+  nlinarith
+
+/-- Lemma 1 of the writeup in the form used: superadditivity of the entrywise `p`-th power for
+two nonnegative `2 × 2` positive semidefinite matrices `[[x1, z1], [z1, y1]]` and
+`[[x2, z2], [z2, y2]]`. -/
+lemma G_psd {p x1 x2 y1 y2 z1 z2 : ℝ} (hp : 2 ≤ p)
+    (hx1 : 0 ≤ x1) (hx2 : 0 ≤ x2) (hy1 : 0 ≤ y1) (hy2 : 0 ≤ y2) (hz1' : 0 ≤ z1) (hz2' : 0 ≤ z2)
+    (hz1 : z1 ^ 2 ≤ x1 * y1) (hz2 : z2 ^ 2 ≤ x2 * y2) :
+    PSD2 (G p x1 x2) (G p y1 y2) (G p z1 z2) := by
+  have hp1 : (1:ℝ) ≤ p := by linarith
+  have hp0 : (0:ℝ) < p := by linarith
+  refine ⟨G_nonneg hp1 hx1 hx2, G_nonneg hp1 hy1 hy2, ?_⟩
+  have hxy : 0 ≤ G p x1 x2 * G p y1 y2 :=
+    mul_nonneg (G_nonneg hp1 hx1 hx2) (G_nonneg hp1 hy1 hy2)
+  rcases hz1'.eq_or_lt with h1 | h1
+  · rw [← h1, G_zero_left hp0]; simpa using hxy
+  rcases hz2'.eq_or_lt with h2 | h2
+  · rw [← h2, G_zero_right hp0]; simpa using hxy
+  have pos : ∀ x y z : ℝ, 0 ≤ x → 0 ≤ y → 0 < z → z ^ 2 ≤ x * y → 0 < x ∧ 0 < y := by
+    intro x y z hx hy hz h
+    have hxy : 0 < x * y := lt_of_lt_of_le (by positivity) h
+    refine ⟨lt_of_le_of_ne hx ?_, lt_of_le_of_ne hy ?_⟩
+    · rintro rfl; simp at hxy
+    · rintro rfl; simp at hxy
+  obtain ⟨hx1p, hy1p⟩ := pos x1 y1 z1 hx1 hy1 h1 hz1
+  obtain ⟨hx2p, hy2p⟩ := pos x2 y2 z2 hx2 hy2 h2 hz2
+  have key := G_le_sqrt hp hx1p hx2p hy1p hy2p h1 h2 hz1 hz2
+  calc G p z1 z2 ^ 2 ≤ (√(G p x1 x2) * √(G p y1 y2)) ^ 2 :=
+        pow_le_pow_left₀ (G_nonneg hp1 h1.le h2.le) key 2
+    _ = G p x1 x2 * G p y1 y2 := by
+        rw [mul_pow, Real.sq_sqrt (G_nonneg hp1 hx1 hx2), Real.sq_sqrt (G_nonneg hp1 hy1 hy2)]
+
+/-- Repeated application of Lemma 1: for rank-one matrices `[[x i, z i], [z i, y i]]` with
+`z i ^ 2 ≤ x i * y i`, the matrix `(∑ A_i)^{∘p} - ∑ A_i^{∘p}` is positive semidefinite. -/
+lemma sum_psd {ι : Type*} {p : ℝ} (hp : 2 ≤ p) (s : Finset ι) (x y z : ι → ℝ)
+    (hx : ∀ i, 0 ≤ x i) (hy : ∀ i, 0 ≤ y i) (hz : ∀ i, 0 ≤ z i)
+    (hxyz : ∀ i, z i ^ 2 ≤ x i * y i) :
+    PSD2 ((∑ i ∈ s, x i) ^ p - ∑ i ∈ s, x i ^ p) ((∑ i ∈ s, y i) ^ p - ∑ i ∈ s, y i ^ p)
+      ((∑ i ∈ s, z i) ^ p - ∑ i ∈ s, z i ^ p) := by
+  have hp0 : p ≠ 0 := by linarith
+  classical
+  induction s using Finset.induction_on with
+  | empty =>
+    refine ⟨?_, ?_, ?_⟩ <;> simp [Real.zero_rpow hp0]
+  | insert j s hj ih =>
+    simp only [Finset.sum_insert hj]
+    have hX : 0 ≤ ∑ i ∈ s, x i := Finset.sum_nonneg (fun i _ => hx i)
+    have hY : 0 ≤ ∑ i ∈ s, y i := Finset.sum_nonneg (fun i _ => hy i)
+    have hZ : 0 ≤ ∑ i ∈ s, z i := Finset.sum_nonneg (fun i _ => hz i)
+    have hCS : (∑ i ∈ s, z i) ^ 2 ≤ (∑ i ∈ s, x i) * ∑ i ∈ s, y i :=
+      Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul s (fun i _ => hx i) (fun i _ => hy i)
+        (fun i _ => hxyz i)
+    have hG := G_psd hp (hx j) hX (hy j) hY (hz j) hZ (hxyz j) hCS
+    have e : ∀ a S T : ℝ, (a + S) ^ p - (a ^ p + T) = G p a S + (S ^ p - T) := by
+      intro a S T; unfold G; ring
+    rw [e, e, e]
+    exact hG.add ih
+
 end RealPowerCauchySchwarz
