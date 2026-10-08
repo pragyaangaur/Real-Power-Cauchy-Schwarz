@@ -374,4 +374,136 @@ theorem eq_of_single {n : ℕ} {p : ℝ} (hp : 0 < p) (v w : Fin n → ℝ) (hv 
   rw [s1, s2, s3, s4, s5, s6, h0, Real.sqrt_sq (Real.rpow_nonneg (hv i) _),
     Real.sqrt_sq (Real.rpow_nonneg (hw j) _), Real.sqrt_sq (hv i), Real.sqrt_sq (hw j)]
 
+/-! ## The case `p > 2` -/
+
+lemma pair_two_lt {n : ℕ} {p : ℝ} (hp : 2 < p) {v w : Fin n → ℝ} (hv : ∀ i, 0 ≤ v i)
+    (hw : ∀ i, 0 ≤ w i) (hV : 0 < ∑ i, v i ^ 2) (hW : 0 < ∑ i, w i ^ 2)
+    (heq : lhs p v w = rhs p v w) {i j : Fin n} (hij : i ≠ j) :
+    (v i * v j = 0 ↔ w i * w j = 0) ∧ (v i * v j ≠ 0 → v i * w j = v j * w i) := by
+  obtain ⟨h1, h2⟩ := pair_of_eq hp.le hv hw hV hW heq hij
+  have hp1 : 1 < p := by linarith
+  have hp0 : 0 < p := by linarith
+  have hP0 : 0 < (∑ k, v k ^ 2) ^ p := Real.rpow_pos_of_pos hV _
+  have hQ0 : 0 < (∑ k, w k ^ 2) ^ p := Real.rpow_pos_of_pos hW _
+  -- `G` at a pair of squares vanishes exactly when the product vanishes
+  have Gzero : ∀ x y : ℝ, 0 ≤ x → 0 ≤ y → (G p (x ^ 2) (y ^ 2) = 0 ↔ x * y = 0) := by
+    intro x y hx hy
+    constructor
+    · intro h
+      by_contra hxy
+      have hx' : 0 < x := lt_of_le_of_ne hx (by rintro rfl; simp at hxy)
+      have hy' : 0 < y := lt_of_le_of_ne hy (by rintro rfl; simp at hxy)
+      have := G_pos hp1 (pow_pos hx' 2) (pow_pos hy' 2)
+      linarith
+    · intro h
+      rcases mul_eq_zero.1 h with h | h
+      · rw [h]; simpa using G_zero_left hp0
+      · rw [h]; simpa using G_zero_right hp0
+  have hiff : v i * v j = 0 ↔ w i * w j = 0 := by
+    rw [← Gzero _ _ (hv i) (hv j), ← Gzero _ _ (hw i) (hw j)]
+    constructor
+    · intro h; rw [h, mul_zero] at h2
+      exact (mul_eq_zero.1 h2.symm).resolve_left hP0.ne'
+    · intro h; rw [h, mul_zero] at h2
+      exact (mul_eq_zero.1 h2).resolve_left hQ0.ne'
+  refine ⟨hiff, fun hvv => ?_⟩
+  have hww : w i * w j ≠ 0 := fun h => hvv (hiff.2 h)
+  have pos : ∀ x y : ℝ, 0 ≤ x → 0 ≤ y → x * y ≠ 0 → 0 < x ∧ 0 < y := fun x y hx hy h =>
+    ⟨lt_of_le_of_ne hx (by rintro rfl; simp at h), lt_of_le_of_ne hy (by rintro rfl; simp at h)⟩
+  obtain ⟨hvi, hvj⟩ := pos _ _ (hv i) (hv j) hvv
+  obtain ⟨hwi, hwj⟩ := pos _ _ (hw i) (hw j) hww
+  by_contra hne
+  have hne2 : v i ^ 2 * w j ^ 2 ≠ v j ^ 2 * w i ^ 2 := by
+    intro h
+    apply hne
+    have h' : (v i * w j) ^ 2 = (v j * w i) ^ 2 := by rw [mul_pow, mul_pow]; linarith
+    exact (pow_left_inj₀ (by positivity) (by positivity) (by norm_num)).1 h'
+  have hlt := G_lt_sqrt hp (pow_pos hvi 2) (pow_pos hvj 2) (pow_pos hwi 2) (pow_pos hwj 2)
+    (mul_pos hvi hwi) (mul_pos hvj hwj) (by rw [mul_pow]) (by rw [mul_pow]) hne2
+  have hX12 : 0 ≤ G p (v i * w i) (v j * w j) :=
+    G_nonneg hp1.le (mul_pos hvi hwi).le (mul_pos hvj hwj).le
+  have hX11 : 0 ≤ G p (v i ^ 2) (v j ^ 2) := G_nonneg hp1.le (sq_nonneg _) (sq_nonneg _)
+  have hX22 : 0 ≤ G p (w i ^ 2) (w j ^ 2) := G_nonneg hp1.le (sq_nonneg _) (sq_nonneg _)
+  have : G p (v i * w i) (v j * w j) ^ 2 < G p (v i ^ 2) (v j ^ 2) * G p (w i ^ 2) (w j ^ 2) := by
+    calc G p (v i * w i) (v j * w j) ^ 2
+        < (√(G p (v i ^ 2) (v j ^ 2)) * √(G p (w i ^ 2) (w j ^ 2))) ^ 2 :=
+          pow_lt_pow_left₀ hlt hX12 (by norm_num)
+      _ = _ := by rw [mul_pow, Real.sq_sqrt hX11, Real.sq_sqrt hX22]
+  linarith
+
+lemma sum_sq_eq_zero {n : ℕ} {v : Fin n → ℝ} (h : ∑ i, v i ^ 2 = 0) : ∀ i, v i = 0 := by
+  intro i
+  have := (Finset.sum_eq_zero_iff_of_nonneg (fun k _ => sq_nonneg (v k))).1 h i
+    (Finset.mem_univ i)
+  exact pow_eq_zero_iff (n := 2) (by norm_num) |>.1 this
+
+/-- **Equality for `p > 2`.** For real `p > 2` and entrywise nonnegative `v, w`, equality holds in
+Theorem 1 if and only if `v` and `w` are linearly dependent, or each of them has at most one
+nonzero entry. -/
+theorem eq_iff_of_two_lt {n : ℕ} {p : ℝ} (hp : 2 < p) (v w : Fin n → ℝ) (hv : ∀ i, 0 ≤ v i)
+    (hw : ∀ i, 0 ≤ w i) :
+    lhs p v w = rhs p v w ↔
+      ((∀ i j, v i * w j = v j * w i) ∨
+        (∀ i j, i ≠ j → v i * v j = 0 ∧ w i * w j = 0)) := by
+  have hp0 : 0 < p := by linarith
+  constructor
+  · intro heq
+    have hV0 : 0 ≤ ∑ i, v i ^ 2 := Finset.sum_nonneg (fun k _ => sq_nonneg _)
+    have hW0 : 0 ≤ ∑ i, w i ^ 2 := Finset.sum_nonneg (fun k _ => sq_nonneg _)
+    rcases hV0.eq_or_lt with hV | hV
+    · left; intro i j; rw [sum_sq_eq_zero hV.symm i, sum_sq_eq_zero hV.symm j]; ring
+    rcases hW0.eq_or_lt with hW | hW
+    · left; intro i j; rw [sum_sq_eq_zero hW.symm i, sum_sq_eq_zero hW.symm j]; ring
+    by_cases hsp : ∀ i j, i ≠ j → v i * v j = 0 ∧ w i * w j = 0
+    · exact Or.inr hsp
+    left
+    push Not at hsp
+    obtain ⟨i0, j0, hij, hnz⟩ := hsp
+    have hpair := fun {i j : Fin n} (h : i ≠ j) => pair_two_lt hp hv hw hV hW heq h
+    have hvv : v i0 * v j0 ≠ 0 := by
+      intro h
+      exact hnz h ((hpair hij).1.1 h)
+    have hww : w i0 * w j0 ≠ 0 := fun h => hvv ((hpair hij).1.2 h)
+    have hv0 : v i0 ≠ 0 := left_ne_zero_of_mul hvv
+    have hw0 : w i0 ≠ 0 := left_ne_zero_of_mul hww
+    have hk : ∀ k, v i0 * w k = v k * w i0 := by
+      intro k
+      by_cases hki : k = i0
+      · rw [hki]
+      by_cases hvk : v i0 * v k = 0
+      · have hwk := ((hpair (Ne.symm hki)).1).1 hvk
+        have hvk' : v k = 0 := (mul_eq_zero.1 hvk).resolve_left hv0
+        have hwk' : w k = 0 := (mul_eq_zero.1 hwk).resolve_left hw0
+        rw [hvk', hwk']; ring
+      · exact (hpair (Ne.symm hki)).2 hvk
+    intro k l
+    apply mul_left_cancel₀ hv0
+    have h1 := hk l
+    have h2 := hk k
+    calc v i0 * (v k * w l) = v k * (v i0 * w l) := by ring
+      _ = v k * (v l * w i0) := by rw [h1]
+      _ = v l * (v k * w i0) := by ring
+      _ = v l * (v i0 * w k) := by rw [h2]
+      _ = v i0 * (v l * w k) := by ring
+  · rintro (hmin | hsp)
+    · exact eq_of_minors hp0 v w hv hw hmin
+    by_cases hmin : ∀ i j, v i * w j = v j * w i
+    · exact eq_of_minors hp0 v w hv hw hmin
+    push Not at hmin
+    obtain ⟨k, l, hkl⟩ := hmin
+    have hne : k ≠ l := by rintro rfl; exact hkl rfl
+    by_cases h1 : v k * w l ≠ 0
+    · have hvk : v k ≠ 0 := left_ne_zero_of_mul h1
+      have hwl : w l ≠ 0 := right_ne_zero_of_mul h1
+      refine eq_of_single hp0 v w hv hw hne (fun m hm => ?_) (fun m hm => ?_)
+      · exact (mul_eq_zero.1 ((hsp k m (Ne.symm hm)).1)).resolve_left hvk
+      · exact (mul_eq_zero.1 ((hsp l m (Ne.symm hm)).2)).resolve_left hwl
+    · push Not at h1
+      have h2 : v l * w k ≠ 0 := by rw [h1] at hkl; exact Ne.symm hkl
+      have hvl : v l ≠ 0 := left_ne_zero_of_mul h2
+      have hwk : w k ≠ 0 := right_ne_zero_of_mul h2
+      refine eq_of_single hp0 v w hv hw (Ne.symm hne) (fun m hm => ?_) (fun m hm => ?_)
+      · exact (mul_eq_zero.1 ((hsp l m (Ne.symm hm)).1)).resolve_left hvl
+      · exact (mul_eq_zero.1 ((hsp k m (Ne.symm hm)).2)).resolve_left hwk
+
 end RealPowerCauchySchwarz
