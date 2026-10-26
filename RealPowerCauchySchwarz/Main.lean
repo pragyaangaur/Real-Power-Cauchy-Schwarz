@@ -1,6 +1,10 @@
-import RealPowerCauchySchwarz.Basic
-import RealPowerCauchySchwarz.Equality
-import RealPowerCauchySchwarz.Weighted
+module
+
+public import RealPowerCauchySchwarz.Basic
+public import RealPowerCauchySchwarz.Equality
+public import RealPowerCauchySchwarz.Weighted
+
+@[expose] public section
 
 /-!
 # Main statements in the language of `ℝⁿ`

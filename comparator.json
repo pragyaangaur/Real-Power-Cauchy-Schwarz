@@ -1,0 +1,14 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Solution",
+  "theorem_names": [
+    "RealPowerCauchySchwarz.conjecture_5_1",
+    "RealPowerCauchySchwarz.inequality",
+    "RealPowerCauchySchwarz.equality_cases_of_two_lt",
+    "RealPowerCauchySchwarz.equality_cases_two",
+    "RealPowerCauchySchwarz.weighted_characterisation"
+  ],
+  "definition_names": [],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "enable_nanoda": true
+}

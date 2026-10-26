@@ -8,6 +8,8 @@ This repository contains a Lean 4 proof, built on Mathlib, of Conjecture 5.1 in 
 
 The authors proved the inequality for integer p, showed that it fails for p between 1 and 2, and checked the remaining case numerically. We prove it for every real p ≥ 2 and all vectors with nonnegative entries. We also determine every case of equality and decide exactly which weighted versions of the inequality hold.
 
+Nathaniel Johnston and Mohammad Sababheh proved the conjecture and its equality cases independently and at the same time, in [arXiv:2610.12063](https://arxiv.org/abs/2610.12063). Their preprint was submitted on 8 October 2026, the day the paper below was posted on Zenodo, and Johnston has said that their next version will cite this work as concurrent. Their work does not contain the weighted characterisation or a formal proof, and it proves a lower bound for the gap that this repository does not.
+
 ## Main statements
 
 ```lean
@@ -67,7 +69,7 @@ lake build
 scripts/check.sh
 ```
 
-`scripts/check.sh` builds the project, fails on any `sorry`, `native_decide` or declared axiom, and prints the axioms of every theorem listed in `THEOREMS`. Each of them depends only on `propext`, `Classical.choice` and `Quot.sound`. The project uses Lean `v4.35.0-rc1` and a pinned Mathlib commit.
+`scripts/check.sh` builds the project, fails on any `sorry`, `native_decide` or declared axiom, and prints the axioms of every theorem listed in `THEOREMS`. Each of them depends only on `propext`, `Classical.choice` and `Quot.sound`. The project uses Lean `v4.35.0` and the Mathlib tag `v4.35.0`, and every Lean file uses the module system. The paper describes the earlier build on Lean `v4.35.0-rc1`, and apart from the module headers the proofs did not change in the upgrade.
 
 ## Numerical check
 
@@ -84,6 +86,20 @@ The paper *A Cauchy-Schwarz inequality for real powers: proof, equality cases an
 An illustrated explanation of the proof, with interactive plots, is published at [pragyaangaur.github.io/Real-Power-Cauchy-Schwarz](https://pragyaangaur.github.io/Real-Power-Cauchy-Schwarz/). Its source is `docs/index.html`, and it needs no build step.
 
 The applications report *What a Cauchy-Schwarz inequality for real powers is good for* is [`docs/applications.pdf`](docs/applications.pdf). It derives consequences for tempered and escort distributions, partition functions, sharpening in semi-supervised learning and kernels on nonnegative features, and it labels each claim as proved, cited or proposed. The folder `companion/applications/` holds its LaTeX source and the script `consequences.py`, which tests every corollary in the report on random inputs and draws its figures.
+
+## Palomar files
+
+The repository is laid out for the [Palomar](https://palomar-registry.org) registry of machine-checked results.
+
+* `Challenge.lean` states the five advertised theorems with `sorry`. It imports only Mathlib, so a reader can audit the statements without reading the proofs. It contains Conjecture 5.1 in its original form, the inequality for nonnegative vectors, the two equality characterisations and the weighted characterisation.
+* `Solution.lean` repeats the same five statements and proves each of them by quoting a theorem of the library.
+* `comparator.json` names the five theorems, so that `lake comparator` can check that each proof in `Solution.lean` proves exactly the statement in `Challenge.lean` with only the standard axioms.
+* `formalization.yaml` records the sources, the scope, the known divergences and how the work was produced.
+* `.github/workflows/palomar-preflight.yml` runs Palomar's own mechanical verification on a commit without submitting it.
+
+## How this was made
+
+The first informal proof of the inequality was produced by the automated proof system of the Principia Math project, whose underlying model was not disclosed. Pragyaan Gaur used Claude Opus 5.5 (Anthropic) through Claude Code on 8 October 2026 to help find the equality cases and the weighted characterisation, to write the Lean proofs and the numerical script, and to prepare the paper and its companions. Claude Opus 5.5 prepared the Palomar files and the upgrade to Lean `v4.35.0` on 26 October 2026. Pragyaan Gaur checked the mathematics, compared every statement in `Challenge.lean` with the paper, and is responsible for the content. No AI system is an author.
 
 ## Credits
 

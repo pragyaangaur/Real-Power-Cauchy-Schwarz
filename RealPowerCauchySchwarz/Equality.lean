@@ -1,4 +1,8 @@
-import RealPowerCauchySchwarz.Basic
+module
+
+public import RealPowerCauchySchwarz.Basic
+
+@[expose] public section
 
 /-!
 # The equality cases of Theorem 1

@@ -1,0 +1,220 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+version: "v0.4"
+
+project:
+  name: "A Cauchy-Schwarz inequality for real powers: proof, equality cases and weighted forms"
+  description: >-
+    For a vector v with nonnegative entries and a real number p, write v^p for the vector of p-th
+    powers of its entries. Johnston, Plosker, Torrance and Varona (arXiv:2507.10327, Conjecture
+    5.1) conjectured that ‖v^p‖ ‖w^p‖ - ⟨v^p, w^p⟩ ≤ ‖v‖^p ‖w‖^p - ⟨v, w⟩^p for every real
+    p ≥ 2 and all vectors v, w in ℝⁿ with positive entries, with the Euclidean norm and inner
+    product. They proved it for integer p and showed that it fails for 1 < p < 2. This
+    formalization proves the conjecture for every real p ≥ 2 and all vectors with nonnegative
+    entries. It also determines every case of equality: for p > 2 equality holds exactly when v
+    and w are linearly dependent or each has at most one nonzero entry, and for p = 2 there is
+    one further family supported on two coordinates. Finally, for positive coordinate weights ω
+    used in every norm and inner product, the weighted inequality holds for all nonnegative
+    vectors exactly when ω_i ω_j ≥ 1 for all i ≠ j, a condition that does not depend on p. The
+    proof shows that a 2 × 2 entrywise-power defect matrix is positive semidefinite, using a
+    double integral formula and the Cauchy-Schwarz inequality for integrals. The conjecture and
+    its equality cases were also proved, independently and concurrently, by Johnston and
+    Sababheh (arXiv:2610.12063).
+  authors:
+    - "Pragyaan Gaur"
+  license: "MIT"
+  responsible_maintainers:
+    - "Pragyaan Gaur"
+
+classification:
+  arxiv: ["math.FA", "math.CA"]
+  msc2020: ["26D15", "15A45", "15B48", "68V20"]
+
+sources:
+  - title: "A Cauchy-Schwarz inequality for real powers: proof, equality cases and weighted forms"
+    authors:
+      - "Pragyaan Gaur"
+    id: "doi:10.5281/zenodo.23237507"
+    type: paper
+    location: "https://doi.org/10.5281/zenodo.23237507"
+    relationship: formalizes
+    note: >-
+      The author's paper. Its Theorems 1, 2, 3 and 4 are the inequality, the equality cases for
+      p > 2 and for p = 2, and the weighted characterisation, and this repository formalizes all
+      four. Section 7 of the paper describes this Lean development. The paper's Section 6 on
+      more than two vectors and its open questions in Section 8 are not formalized.
+    license: "CC-BY-4.0"
+    author_endorsement: participated
+  - title: "Generalizing the Cauchy-Schwarz inequality: Hadamard powers and tensor products"
+    authors:
+      - "Nathaniel Johnston"
+      - "Sarah Plosker"
+      - "Charles Torrance"
+      - "Luis M. B. Varona"
+    id: "arXiv:2507.10327"
+    type: paper
+    location: "Linear and Multilinear Algebra 74 (2026), 1779-1798, doi:10.1080/03081087.2026.2707240"
+    relationship: other
+    note: >-
+      Poses the problem. Conjecture 5.1 of this paper is stated verbatim as conjecture_5_1 in
+      Challenge.lean. The paper proves the integer case (Corollary 3.4) and the failure for
+      1 < p < 2 (Example 1). Neither of those results is part of this formalization.
+  - title: "Hadamard powers of Gram matrices and generalized Cauchy-Schwarz inequalities"
+    authors:
+      - "Nathaniel Johnston"
+      - "Mohammad Sababheh"
+    id: "arXiv:2610.12063"
+    type: paper
+    location: "https://arxiv.org/abs/2610.12063"
+    relationship: independently-proves
+    note: >-
+      Proves Conjecture 5.1 and its equality cases (their Theorem 4.2) independently and
+      concurrently. Their preprint was submitted on 8 October 2026, the same day as the Zenodo
+      record above. Their work does not contain the weighted characterisation or a formal proof.
+      It also proves a lower bound for the gap, which is not formalized here. Nathaniel Johnston
+      told the author of their preprint on 9 October 2026 and said that their next version will
+      cite the author's work as concurrent, and the author's arXiv version cites theirs.
+  - title: "Principia Math, problem MathDB 369283: informal proof of the inequality"
+    id: "MathDB 369283"
+    type: other
+    location: "https://principia-math.com"
+    relationship: other
+    note: >-
+      The first informal proof of the main inequality, through positive semidefiniteness of the
+      2 × 2 defect matrix, was produced by the automated proof system of the Principia Math
+      project. The Lean proof of the inequality follows that strategy. The
+      equality cases and the weighted characterisation are not in it.
+  - title: "Complete characterization of Hadamard powers preserving Loewner positivity, monotonicity, and convexity"
+    authors:
+      - "Dominique Guillot"
+      - "Apoorva Khare"
+      - "Bala Rajaratnam"
+    id: "arXiv:1311.1581"
+    type: paper
+    location: "J. Math. Anal. Appl. 425 (2015), 489-507, doi:10.1016/j.jmaa.2014.12.048"
+    relationship: background
+    note: >-
+      The 2 × 2 superadditivity of entrywise powers used in the proof is a special case of their
+      Theorem 5.1. The Lean development proves the needed case directly and does not import it.
+
+related_formalizations: []
+
+status:
+  scope: >-
+    Formalized: the inequality for every real p ≥ 2 and all v, w in ℝⁿ with nonnegative entries
+    (inequality), the conjecture in its original form with positive entries (conjecture_5_1),
+    both equality characterisations (equality_cases_of_two_lt for p > 2 and equality_cases_two
+    for p = 2), and the weighted characterisation (weighted_characterisation). Every statement
+    holds for every n, including n = 0, where both sides are zero. Not formalized: the integer
+    case and the failure for 1 < p < 2 from Johnston, Plosker, Torrance and Varona, the case of
+    more than two vectors and the open questions in Sections 6 and 8 of the author's paper, and
+    the applications report in docs/applications.pdf.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: []
+  main_results:
+    - "Conjecture 5.1 of Johnston, Plosker, Torrance and Varona, for nonnegative entries"
+    - "Every case of equality, for p > 2 and for p = 2"
+    - "Characterisation of the weights for which the weighted inequality holds"
+
+automation:
+  methods:
+    - method: autonomous
+      models: []
+      framework: "Principia Math automated proof system"
+      tool_setup: >-
+        Produced the first informal proof of the main inequality, published on Principia Math
+        as the solution to MathDB 369283. The underlying model and its version were not disclosed
+        to the author.
+      cost:
+        wall_time: "not known"
+        spend_usd: "not tracked"
+        hardware: "Principia Math infrastructure"
+      prompting_notes: "n/a"
+    - method: agent
+      models: ["Claude Opus 5.5 (claude-opus-5-5)"]
+      framework: "Claude Code"
+      tool_setup: >-
+        Used on 8 October 2026 to help find the equality cases and the weighted
+        characterisation, to write the Lean 4 proofs against Mathlib, to write the numerical
+        check scripts/numerics.py, and to prepare the manuscript, the exposition and the
+        applications report.
+      cost:
+        wall_time: "one day, 8 October 2026"
+        spend_usd: "subscription-based"
+        hardware: "API-only, with Lean built on the author's laptop"
+      prompting_notes: >-
+        The author directed the work stage by stage and checked each result against the Lean
+        compiler and the numerical script.
+    - method: agent
+      models: ["Claude Opus 5.5 (claude-opus-5-5)"]
+      framework: "Claude Code"
+      tool_setup: >-
+        Used on 26 October 2026 to prepare this Palomar submission: the upgrade to Lean v4.35.0
+        and the Mathlib v4.35.0 tag, the port of every file to the Lean module system,
+        Challenge.lean, Solution.lean, comparator.json and this file.
+      cost:
+        wall_time: "a few hours"
+        spend_usd: "subscription-based"
+        hardware: "API-only, with Lean built on the author's laptop"
+      prompting_notes: "n/a"
+  spend_usd: "subscription-based"
+  notes: >-
+    The problem was chosen by the author from the Principia Math problem list. The first
+    informal proof of the main inequality came from the Principia Math automated system. The
+    author then used Claude through Claude Code to find and prove the equality cases and the
+    weighted characterisation and to write the whole Lean development. The author checked the
+    mathematics, read the statements in Challenge.lean against the paper, and is responsible for
+    the content. No AI system is listed as an author.
+
+fidelity:
+  divergences: >-
+    The conjecture assumes positive entries. The theorem inequality assumes only nonnegative
+    entries, which is stronger, and conjecture_5_1 restates the original hypotheses. The source
+    states the conjecture for n ≥ 1, and the formal statements hold for every n. Real powers are
+    Real.rpow, so x ^ p for x ≥ 0 is the usual real power, with 0 ^ p = 0 for p > 0. Linear
+    dependence of v and w is expressed by the vanishing of all 2 × 2 minors v i w j - v j w i,
+    which is equivalent. The weighted statement writes the weighted norms and inner product as
+    explicit finite sums. No other divergences are known.
+
+review:
+  status: "author-verified"
+  reviewers: []
+  notes: >-
+    The author checked the informal proofs and compared every statement in Challenge.lean with
+    the paper. The Lean proofs use only propext, Classical.choice and Quot.sound, and
+    scripts/check.sh fails on any sorry, native_decide or declared axiom. scripts/numerics.py
+    tests every statement on random inputs. No independent human review of the formalization has
+    taken place.
+
+alignment:
+  namespace: "RealPowerCauchySchwarz"
+  statements:
+    - source: "Conjecture 5.1 of arXiv:2507.10327"
+      lean: "RealPowerCauchySchwarz.conjecture_5_1"
+      module: "Challenge"
+      status: proved
+      note: "The conjecture as stated, with positive entries."
+    - source: "Theorem 1 of doi:10.5281/zenodo.23237507"
+      lean: "RealPowerCauchySchwarz.inequality"
+      module: "Challenge"
+      status: proved
+      note: "The inequality for nonnegative entries."
+    - source: "Theorem 2 of doi:10.5281/zenodo.23237507"
+      lean: "RealPowerCauchySchwarz.equality_cases_of_two_lt"
+      module: "Challenge"
+      status: proved
+      note: "Equality cases for p > 2."
+    - source: "Theorem 3 of doi:10.5281/zenodo.23237507"
+      lean: "RealPowerCauchySchwarz.equality_cases_two"
+      module: "Challenge"
+      status: proved
+      note: "Equality cases for p = 2."
+    - source: "Theorem 4 of doi:10.5281/zenodo.23237507"
+      lean: "RealPowerCauchySchwarz.weighted_characterisation"
+      module: "Challenge"
+      status: proved
+      note: "The weighted characterisation, with weighted norms written as sums."
+
+acknowledgements: >-
+  Built on Lean 4 and Mathlib. The problem is due to Johnston, Plosker, Torrance and Varona, and
+  Nathaniel Johnston told the author about the concurrent work with Mohammad Sababheh.

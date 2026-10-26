@@ -1,4 +1,6 @@
-import RealPowerCauchySchwarz.Basic
-import RealPowerCauchySchwarz.Equality
-import RealPowerCauchySchwarz.Weighted
-import RealPowerCauchySchwarz.Main
+module
+
+public import RealPowerCauchySchwarz.Basic
+public import RealPowerCauchySchwarz.Equality
+public import RealPowerCauchySchwarz.Weighted
+public import RealPowerCauchySchwarz.Main

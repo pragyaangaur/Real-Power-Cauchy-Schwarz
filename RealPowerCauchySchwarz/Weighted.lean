@@ -1,4 +1,8 @@
-import RealPowerCauchySchwarz.Basic
+module
+
+public import RealPowerCauchySchwarz.Basic
+
+@[expose] public section
 
 /-!
 # The weighted inequality
