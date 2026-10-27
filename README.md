@@ -52,7 +52,7 @@ Put A_i equal to the 2 × 2 rank-one matrix with rows (v_i², v_i w_i) and (v_i 
 
 The equality cases come from a strict form of the same 2 × 2 estimate. Equality forces every pair of coordinates to contribute a degenerate piece, and for p > 2 the strict estimate allows this only for proportional pairs. For p = 2 the estimate is an identity, and a direct computation gives the extra family.
 
-For the weighted inequality, a weight below 1 can occur at one coordinate at most. That coordinate is split off, the rest is bounded with the unweighted theorem, and a supremum over one scaling parameter reduces everything to a two-dimensional estimate that follows from the 2 × 2 superadditivity.
+For the weighted inequality, write Q_i for the rank-one 2 × 2 matrix of entrywise p-th powers at coordinate i, with rows ((v_i^p)², v_i^p w_i^p) and (v_i^p w_i^p, (w_i^p)²). The condition ω_i ω_j ≥ 1 allows at most one weight below 1. If every weight is at least 1, each coordinate adds the positive semidefinite correction (ω_i^(p-1) − 1) ω_i Q_i, and these corrections together with the 2 × 2 superadditivity give the weighted inequality. If one weight ω_k is below 1, put t = ω_k^(−(p−1)), so that t ≥ 1. Every other weight satisfies ω_j ≥ 1/ω_k, hence ω_j^(p−1) ≥ t, so the weight-dependent corrections (ω_j^(p−1) − t) ω_j Q_j are positive semidefinite. This is exactly where the pairwise condition enters. Adding these corrections to the superadditivity over the coordinates other than k shows that the left-hand side is at most the defect of t times the matrix of coordinate k plus 1/t times the entrywise p-th power of the weighted Gram matrix of the other coordinates. An arithmetic-geometric mean estimate that holds for every t ≥ 1 bounds this defect, and a two-dimensional estimate that follows from the 2 × 2 superadditivity finishes the proof. These steps are `psd2_extra`, `sup_bound`, `two_dim` and `weighted_of_pairwise` in `Weighted.lean`.
 
 | File | What it proves |
 | --- | --- |
@@ -103,7 +103,7 @@ The first informal proof of the inequality was produced by the automated proof s
 
 ## Credits
 
-The conjecture is due to Johnston, Plosker, Torrance and Varona. The informal proof of the inequality first appeared on [Principia Math](https://principia-math.com) as the solution to problem MathDB 369283, and the 2 × 2 superadditivity it uses is a case of a result of D. Guillot, A. Khare and B. Rajaratnam. Pragyaan Gaur wrote the formal proofs, the equality cases and the weighted characterisation.
+The conjecture is due to Johnston, Plosker, Torrance and Varona. The informal proof of the inequality first appeared on [Principia Math](https://principia-math.com) as the solution to problem MathDB 369283, and the 2 × 2 superadditivity it uses is a case of a result of D. Guillot, A. Khare and B. Rajaratnam. Pragyaan Gaur directed the work, found the equality cases and the weighted characterisation with the help of Claude, checked all the mathematics and the statements in `Challenge.lean`, and is responsible for the content. The Lean proofs and the numerical script were written with Claude under the author's direction, as described in the section above.
 
 ## License
 
