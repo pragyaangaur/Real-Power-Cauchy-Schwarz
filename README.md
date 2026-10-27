@@ -91,6 +91,8 @@ The applications report *What a Cauchy-Schwarz inequality for real powers is goo
 
 The repository is laid out for the [Palomar](https://palomar-registry.org) registry of machine-checked results.
 
+The five theorems are registered on Palomar as [PALOMAR-2026-10-27-000021](https://palomar-registry.org/entry?id=PALOMAR-2026-10-27-000021&version=1), registered on 27 October 2026. The registered version is commit `8b7b392`, and later commits to this repository do not change that record.
+
 * `Challenge.lean` states the five advertised theorems with `sorry`. It imports only Mathlib, so a reader can audit the statements without reading the proofs. It contains Conjecture 5.1 in its original form, the inequality for nonnegative vectors, the two equality characterisations and the weighted characterisation.
 * `Solution.lean` repeats the same five statements and proves each of them by quoting a theorem of the library.
 * `comparator.json` names the five theorems, so that `lake comparator` can check that each proof in `Solution.lean` proves exactly the statement in `Challenge.lean` with only the standard axioms.
