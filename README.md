@@ -83,7 +83,7 @@ python3 scripts/numerics.py
 
 The paper *A Cauchy-Schwarz inequality for real powers: proof, equality cases and weighted forms* is on Zenodo at [doi:10.5281/zenodo.23237507](https://doi.org/10.5281/zenodo.23237507). It has the full proofs, the case of more than two vectors and the open questions. A 7 minute narrated video explains the proof on [YouTube](https://youtu.be/OIpJ6RpFTUA).
 
-An illustrated explanation of the proof, with interactive plots, is published at [pragyaangaur.github.io/Real-Power-Cauchy-Schwarz](https://pragyaangaur.github.io/Real-Power-Cauchy-Schwarz/). Its source is `docs/index.html`, and it needs no build step.
+An illustrated explanation of the proof, with interactive plots, is published at [pragyaangaur.dev/Real-Power-Cauchy-Schwarz](https://pragyaangaur.dev/Real-Power-Cauchy-Schwarz/). Its source is `docs/index.html`, and it needs no build step.
 
 The applications report *What a Cauchy-Schwarz inequality for real powers is good for* is [`docs/applications.pdf`](docs/applications.pdf). It derives consequences for tempered and escort distributions, partition functions, sharpening in semi-supervised learning and kernels on nonnegative features, and it labels each claim as proved, cited or proposed. The folder `companion/applications/` holds its LaTeX source and the script `consequences.py`, which tests every corollary in the report on random inputs and draws its figures.
 
