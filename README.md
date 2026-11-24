@@ -1,6 +1,6 @@
 # Real-Power-Cauchy-Schwarz: a Lean proof of a Cauchy-Schwarz inequality for real powers
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23237507.svg)](https://doi.org/10.5281/zenodo.23237507)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.23237507-blue.svg)](https://doi.org/10.5281/zenodo.23237507)
 
 This repository contains a Lean 4 proof, built on Mathlib, of Conjecture 5.1 in the paper *Generalizing the Cauchy-Schwarz inequality: Hadamard powers and tensor products* by N. Johnston, S. Plosker, C. Torrance and L. M. B. Varona ([arXiv:2507.10327](https://arxiv.org/abs/2507.10327), Linear and Multilinear Algebra, 2026, [doi:10.1080/03081087.2026.2707240](https://doi.org/10.1080/03081087.2026.2707240)). For a vector v with nonnegative entries, write v^p for the vector of p-th powers of its entries. The conjecture states the following.
 
